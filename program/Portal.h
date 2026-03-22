@@ -1,11 +1,14 @@
 #pragma once
 
+#include "Map.h"
 #include "Player.h"
 
 // ワープポータルを表すクラス
 // 位置、描画、プレイヤーとの接触判定を担当する
-class Portal {
+class Portal : public IPosition {
+
 public:
+
     // 配置位置と接続先ペア番号を指定してポータルを生成する
     Portal(int tile_x, int tile_y, int pair_index);
 
@@ -18,9 +21,15 @@ public:
     // プレイヤーがポータルに入ったかどうかを判定する
     bool CheckHit(const Player& player) const;
 
-    // 配置位置をタイル座標で返す
-    int GetTileX() const;
-    int GetTileY() const;
+    // ===== IPosition 実装 =====
+
+    // 現在位置（ピクセル座標）を返す
+    int GetPixelPosX() const override { return x_; }
+    int GetPixelPosY() const override { return y_; }
+
+    // 現在位置をタイル座標に変換して返す
+    int GetTilePosX() const override { return x_ / Map::TILE; }
+    int GetTilePosY() const override { return y_ / Map::TILE; }
 
     // 接続先ペア番号を返す
     int GetPairIndex() const;

@@ -2,6 +2,7 @@
 
 #include "IPosition.h"
 #include "Map.h"
+#include "Player.h"
 
 // リングを追跡する敵キャラクター
 // dist 配列をもとに、リングへ近づく方向へ移動する
@@ -14,6 +15,9 @@ public:
 
     // 距離マップを参照し、リングへ近づく方向へ更新する
     void Update(const int dist[Map::H][Map::W], const Map& map);
+
+	// プレイヤーと同じタイル上にいるか判定する
+    bool CheckHit(const Player& player) const;
 
     // 敵を描画する
     void Draw() const;
@@ -33,26 +37,17 @@ public:
     int GetTilePosX() const;
     int GetTilePosY() const;
 
-    // 簡易的な当たり判定用半径
-    int GetRadius() const { return width_ / 4; }
-
 private:
-    // 現在位置
-    // ※この変数がタイル座標なのかピクセル座標なのかは
-    // 実装側と必ずそろえて扱うこと
+
     int x_ = 0;
     int y_ = 0;
-
-    // 描画・当たり判定サイズ
     int width_ = 24;
     int height_ = 24;
 
     // 現在の移動方向
-    // 値は -1, 0, 1 のいずれかを想定する
     int dir_x_ = 1;
     int dir_y_ = 1;
 
     // 生成直後かどうかを表すフラグ
-    // 初回更新時の特殊処理に使う
     bool just_spawned_ = true;
 };

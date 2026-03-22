@@ -6,7 +6,22 @@
 #include "Map.h"
 
 Item::Item(int tile_x, int tile_y, ItemType type)
-    : x_(tile_x), y_(tile_y), type_(type) {
+    : type_(type) {
+    x_ = tile_x * Map::TILE;
+    y_ = tile_y * Map::TILE;
+}
+
+Item Item::CreateRandom(const Map& map, ItemType type)
+{
+    int posX = 0;
+    int posY = 0;
+
+    do {
+        posX = GetRand(Map::W - 1);
+        posY = GetRand(Map::H - 1);
+    } while (!map.IsWalkableTile(posX, posY));
+
+    return Item(posX, posY, type);
 }
 
 void Item::Update() {
@@ -15,11 +30,17 @@ void Item::Update() {
     ++item_frame_;
 }
 
+bool Item::CheckHit(const Player& player) const
+{
+    return player.GetTilePosX() == GetTilePosX() &&
+        player.GetTilePosY() == GetTilePosY();
+}
+
 void Item::Draw() const {
 
     // タイル座標を描画用の中心ピクセル座標へ変換する
-    const int center_x = x_ * Map::TILE + Map::TILE / 2;
-    const int center_y = y_ * Map::TILE + Map::TILE / 2;
+    const int center_x = x_ + Map::TILE / 2;
+    const int center_y = y_ + Map::TILE / 2;
 
     // フレーム数をもとに色がゆっくり変化するアニメーションを作る
     const double time = item_frame_ * 0.05;
@@ -53,20 +74,6 @@ void Item::Draw() const {
     }
 }
 
-bool Item::CheckHit(const Player& player) const {
-    // プレイヤーと同じタイル上にいるかで取得判定を行う
-    return player.GetTilePosX() == x_ &&
-        player.GetTilePosY() == y_;
-}
-
 ItemType Item::GetType() const {
     return type_;
-}
-
-int Item::GetTileX() const {
-    return x_;
-}
-
-int Item::GetTileY() const {
-    return y_;
 }

@@ -6,7 +6,9 @@
 // プレイヤーの位置・描画・状態管理を行うクラス
 // 座標は基本的にピクセル座標で保持し、必要に応じてタイル座標へ変換する
 class Player : public IPosition {
+
 public:
+
     // 初期位置を設定し、通行可能な位置へ補正する
     explicit Player(const Map& map);
 
@@ -43,17 +45,14 @@ public:
     int GetWidth() const { return width_; }
     int GetHeight() const { return height_; }
 
-    // 当たり判定用の簡易半径（文字サイズベース）
-    int GetRadius() const { return font_size_ / 4; }
-
     // ===== 座標補助 =====
 
     // 現在いるタイルの中心座標（描画・移動判定で使用）
-    int GetPlayerTileCenterX() const {
+    int GetTileCenterX() const {
         return GetTilePosX() * Map::TILE + Map::TILE / 2;
     }
 
-    int GetPlayerTileCenterY() const {
+    int GetTileCenterY() const {
         return GetTilePosY() * Map::TILE + Map::TILE / 2;
     }
 

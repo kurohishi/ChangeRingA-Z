@@ -58,8 +58,7 @@ enum class TutorialPhase {
     TUTORIAL_END
 };
 
-// セリフ表示用のダイアログボックス
-// 表示文字列の保持、改行分割、描画を担当する
+// セリフ表示用のダイアログボックス ※表示文字列の保持、改行分割、描画
 class DialogueBox {
 public:
     // フォントなど描画に必要な初期化を行う
@@ -89,8 +88,7 @@ private:
     int font_handle_ = -1;
 };
 
-// チュートリアル全体の進行管理を行うクラス
-// フェーズ遷移、会話進行、演出制御、進行条件の判定を担当する
+// チュートリアル全体の進行管理を行うクラス ※フェーズ遷移、会話進行、演出制御、進行条件の判定
 class TutorialManager {
 public:
 
@@ -112,10 +110,10 @@ public:
     // 会話や演出中など、プレイヤー入力を止めるべき状態かを返す
     bool IsInputLocked() const;
 
-    // プレイヤーが指定タイル上にいるかを判定する
+    // プレイヤーが指定したタイル上にいるかを判定する
     bool IsPlayerOn(Game& game, int tile_x, int tile_y);
 
-    // 敵が指定タイル上にいるかを判定する
+    // 敵が指定したタイル上にいるかを判定する
     bool IsEnemyOn(Game& game, int tile_x, int tile_y);
 
     bool IsDialogueShowing() const;

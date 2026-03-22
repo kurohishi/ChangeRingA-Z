@@ -23,8 +23,9 @@ namespace {
 
 }  // namespace
 
-// ===== DialogueBox =====
+// ===== ダイアログボックス =====
 
+// フォントの初期化
 void DialogueBox::Init() {
     font_handle_ = CreateFontToHandle(
         nullptr,  // デフォルトフォント
@@ -32,18 +33,22 @@ void DialogueBox::Init() {
         3);
 }
 
+// 表示するテキストをセットする
 void DialogueBox::Show(const char* text) {
     current_ = text;
 }
 
+//  表示を閉じる
 void DialogueBox::Hide() {
     current_ = nullptr;
 }
 
+//  セリフを表示中かどうか
 bool DialogueBox::IsShowing() const {
     return current_ != nullptr;
 }
 
+// ダイアログボックスを描画する
 void DialogueBox::Draw() {
     if (!current_) {
         return;
@@ -91,7 +96,9 @@ void DialogueBox::Draw() {
     }
 }
 
-std::vector<std::string> DialogueBox::SplitLines(const char* text) {
+// テキストを改行コードで複数行へ分割する
+std::vector<std::string> DialogueBox::SplitLines(const char* text)
+{
     std::vector<std::string> result;
     std::string current_line;
 
@@ -112,8 +119,9 @@ std::vector<std::string> DialogueBox::SplitLines(const char* text) {
     return result;
 }
 
-// ===== TutorialManager =====
+// ===== チュートリアル管理 =====
 
+// チュートリアル開始時の初期化
 void TutorialManager::Init(Game& game) {
     phase_ = TutorialPhase::WAKE_UP;
     talk_ = 0;
@@ -131,11 +139,13 @@ void TutorialManager::Init(Game& game) {
     game.SetupTutorialStage();
 }
 
+// スキップで初期化する
 bool TutorialManager::IsPlayerOn(Game& game, int tile_x, int tile_y) {
     return game.player.GetTilePosX() == tile_x &&
         game.player.GetTilePosY() == tile_y;
 }
 
+// 敵が指定したタイル上にいるかを判定する
 bool TutorialManager::IsEnemyOn(Game& game, int tile_x, int tile_y) {
     for (const auto& chaser : game.chasers) {
         if (chaser.GetTilePosX() == tile_x &&
@@ -146,11 +156,13 @@ bool TutorialManager::IsEnemyOn(Game& game, int tile_x, int tile_y) {
     return false;
 }
 
+//  会話や演出中など、プレイヤー入力を止めるべき状態かを返す
 bool TutorialManager::IsDialogueShowing() const
 {
     return dialogue_.IsShowing();
 }
 
+// チュートリアルの進行更新
 void TutorialManager::Update(Game& game) {
 
     switch (phase_) {
@@ -664,6 +676,7 @@ void TutorialManager::Update(Game& game) {
     }
 }
 
+// チュートリアル関連のUIや演出の描画
 void TutorialManager::Draw() {
     dialogue_.Draw();
 
@@ -674,15 +687,18 @@ void TutorialManager::Draw() {
     }
 }
 
+// チュートリアルが終了しているかを返す
 bool TutorialManager::IsFinished() const {
     return phase_ == TutorialPhase::TUTORIAL_END;
 }
 
+// スキップで初期化する
 void TutorialManager::SkipReset()
 {
     phase_ = TutorialPhase::TUTORIAL_SKIP;
 }
 
+//  会話や演出中など、プレイヤー入力を止めるべき状態かを返す
 bool TutorialManager::IsInputLocked() const {
     return phase_ == TutorialPhase::WAKE_UP ||
         phase_ == TutorialPhase::NOTICE_RING ||
@@ -697,7 +713,9 @@ bool TutorialManager::IsInputLocked() const {
         phase_ == TutorialPhase::UNDERSTAND_RING_CHASER ||
         phase_ == TutorialPhase::CONFIRM_RING_CHASER_BEHAVIOR ||
         phase_ == TutorialPhase::FEEL_CORNERED ||
-        phase_ == TutorialPhase::REACT_TO_MYSTERIOUS_ITEM ||
         phase_ == TutorialPhase::UNDERSTAND_SPEED_BOOST ||
-        phase_ == TutorialPhase::COLLAPSE_WARNING;
+        phase_ == TutorialPhase::REACT_TO_MYSTERIOUS_ITEM ||
+        phase_ == TutorialPhase::COLLAPSE_WARNING ||
+        phase_ == TutorialPhase::FADE_OUT_AND_RESET ||
+        phase_ == TutorialPhase::WAKE_AFTER_RESET;
 }

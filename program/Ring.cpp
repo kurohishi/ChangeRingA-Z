@@ -13,33 +13,29 @@ namespace {
 }
 
 Ring::Ring() {
-
-    // 初期位置（仮配置）※後でステージ側で上書きされる前提
     radius_ = 16;
     x_ = 200;
     y_ = 200;
 }
 
+// 現在の配置を指定したタイルへ設定する
 void Ring::SetTilePos(int tile_x, int tile_y) {
-
-    // タイル座標 → ピクセル中心座標に変換して保持
     x_ = tile_x * Map::TILE + Map::TILE / 2;
     y_ = tile_y * Map::TILE + Map::TILE / 2;
 }
 
+// 次回の移動先を指定したタイルへ設定する
 void Ring::SetNextTilePos(int tile_x, int tile_y) {
-
-    // 次に移動する位置をピクセル座標で保持 ※RelocateFar() で優先的に使用される
     next_x_ = tile_x * Map::TILE + Map::TILE / 2;
     next_y_ = tile_y * Map::TILE + Map::TILE / 2;
 }
 
+// アニメーション用のパラメータを更新する
 void Ring::Update() {
-
-    // パーティクルの回転アニメーション用の角度を更新
     particle_angle_ += particle_speed_;
 }
 
+// リング本体と粒子エフェクトを描画する
 void Ring::Draw() const {
 
     // ===== リング本体 =====
@@ -64,6 +60,7 @@ void Ring::Draw() const {
     }
 }
 
+// 対象がリングと同じタイル上にいるかを判定する
 bool Ring::CheckHit(const IPosition& target) const {
 
     // タイル単位で一致しているかを判定 ※ピクセルではなくタイルで判定することで誤差を防ぐ
@@ -76,6 +73,7 @@ bool Ring::CheckHit(const IPosition& target) const {
     return ring_tile_x == target_tile_x && ring_tile_y == target_tile_y;
 }
 
+// リングを別の位置へ再配置する
 void Ring::RelocateFar(const IPosition& target, const Map& map) {
 
     // ===== 事前に指定された移動先がある場合 ===== ※チュートリアルなどで位置を固定したいときに使用

@@ -23,32 +23,29 @@ Player::Player(const Map& map) {
     font_size_ = 24;
 }
 
+// タイル左上基準で位置を設定
 void Player::SetTilePos(int tile_x, int tile_y) {
 
-    // タイル座標の左上をそのまま内部座標として設定する
     x_ = tile_x * Map::TILE;
     y_ = tile_y * Map::TILE;
 }
 
+// タイル中心基準で位置を設定
 void Player::SetTileCenterPos(int tile_x, int tile_y) {
 
-    // タイル座標の中心位置を内部座標として設定する
     x_ = tile_x * Map::TILE + Map::TILE / 2;
     y_ = tile_y * Map::TILE + Map::TILE / 2;
 }
 
+//プレイヤー配置の更新
 bool Player::Update(const Map& map) {
 
-    // 移動前の中心座標を保持しておく
-    // ※実際に位置が変わったかどうかの判定に使う
-    const int previous_center_x = GetPlayerTileCenterX();
-    const int previous_center_y = GetPlayerTileCenterY();
+    const int previous_center_x = GetTileCenterX();
+    const int previous_center_y = GetTileCenterY();
 
     int delta_x = 0;
     int delta_y = 0;
 
-    // 1フレームで受け付ける移動方向は1方向だけにする
-    // ※斜め移動を防ぎ、タイル移動の挙動を分かりやすくするため
     if (CheckHitKey(KEY_INPUT_LEFT) || CheckHitKey(KEY_INPUT_A)) {
         delta_x = -Map::TILE;
     }
@@ -68,15 +65,14 @@ bool Player::Update(const Map& map) {
     }
 
     // 次に移動したいタイル中心座標を計算する
-    const int next_center_x = GetPlayerTileCenterX() + delta_x;
-    const int next_center_y = GetPlayerTileCenterY() + delta_y;
+    const int next_center_x = GetTileCenterX() + delta_x;
+    const int next_center_y = GetTileCenterY() + delta_y;
 
     // 当たり判定用に、移動後の矩形左上座標を求める
     const int next_left = next_center_x - width_ / 2;
     const int next_top = next_center_y - height_ / 2;
 
-    // 移動先が通行不可なら移動しない
-    // あわせてリング関連座標を無効値に戻す
+	// 移動先が通行可能かを判定する
     if (!map.IsWalkableRect(next_left, next_top, width_, height_)) {
         ring_x_ = 0;
         ring_y_ = 0;
@@ -84,7 +80,6 @@ bool Player::Update(const Map& map) {
     }
 
     // 実際にプレイヤー座標を更新する
-    // ※現在の実装では x_, y_ の更新単位が Map::TILE を基準に決まっている
     x_ += delta_x / Map::TILE;
     y_ += delta_y / Map::TILE;
 
@@ -97,11 +92,11 @@ bool Player::Update(const Map& map) {
         next_center_y != previous_center_y;
 }
 
+// プレイヤーを文字として描画する
 void Player::Draw() {
 
-    // 現在の論理位置を描画用中心座標に反映する
-    draw_center_x_ = GetPlayerTileCenterX();
-    draw_center_y_ = GetPlayerTileCenterY();
+    draw_center_x_ = GetTileCenterX();
+    draw_center_y_ = GetTileCenterY();
 
     // プレイヤーは現在の文字で描画する
     char text[2] = { character_, '\0' };
@@ -111,36 +106,37 @@ void Player::Draw() {
         GetColor(255, 255, 255));
 }
 
+// 描画位置が前回から変わったかを判定する
 bool Player::HasDrawPositionChanged() const {
 
-    // 前回描画時の座標と比較し、描画位置が更新されたかを返す
     return draw_center_x_ != prev_draw_center_x_ ||
         draw_center_y_ != prev_draw_center_y_;
 }
 
+// 現在の描画位置を「前回の描画位置」として保存する
 void Player::CommitDrawPosition() {
 
-    // 今回描画した座標を「前回の描画位置」として保存する
     prev_draw_center_x_ = draw_center_x_;
     prev_draw_center_y_ = draw_center_y_;
 }
 
+// プレイヤーのレベルを上げる（アルファベットを１つ進む）
 void Player::LevelUp() {
 
-    // 文字は Z を超えない範囲で進める
     if (character_ < 'Z') {
         ++character_;
     }
 }
 
+// プレイヤーのレベルを下げる（アルファベットを１つ戻す）
 void Player::LevelDown() {
 
-    // 文字は A 未満にならない範囲で戻す
     if (character_ > 'A') {
         --character_;
     }
 }
 
+// プレイヤーのレベルが最大か
 bool Player::IsZ() const {
     return character_ == 'Z';
 }

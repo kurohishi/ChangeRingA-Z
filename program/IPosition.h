@@ -7,6 +7,5 @@ public:
     virtual int GetPixelPosY() const = 0;
     virtual int GetTilePosX() const = 0;
     virtual int GetTilePosY() const = 0;
-    virtual int GetRadius() const = 0;
     virtual ~IPosition() = default;
 };

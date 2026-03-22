@@ -2,7 +2,11 @@
 
 #include "DxLib.h"
 #include "Map.h"
+#include "Player.h"
 
+// =====巡回敵関連=====
+
+// 巡回ルートを指定して敵を生成する
 Enemy::Enemy(const std::vector<PatrolPoint>& route) {
 
     patrol_route_ = route;
@@ -24,6 +28,7 @@ Enemy::Enemy(const std::vector<PatrolPoint>& route) {
     speed_ = 1000;
 }
 
+// 更新ごとに巡回ルートに沿って敵を移動させる
 void Enemy::Update(const Map& map) {
 
     // 巡回ルートがなければ移動しない
@@ -82,6 +87,14 @@ void Enemy::Update(const Map& map) {
     }
 }
 
+// プレイヤーと同じタイル上にいるか判定する
+bool Enemy::CheckHit(const Player& player) const
+{
+    return player.GetTilePosX() == GetTilePosX() &&
+        player.GetTilePosY() == GetTilePosY();
+}
+
+// 進行方向に沿って描画する
 void Enemy::Draw() const {
 
     // 敵本体を円で描画する

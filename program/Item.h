@@ -1,5 +1,7 @@
 #pragma once
 
+#include "IPosition.h"
+#include "Map.h"
 #include "Player.h"
 
 // アイテムの種類
@@ -9,26 +11,35 @@ enum class ItemType {
 };
 
 // マップ上に配置されるアイテム ※位置管理、描画、取得判定を担当
-class Item {
+class Item : public IPosition {
+
 public:
     // 配置タイル座標と種類を指定してアイテムを生成する
     Item(int tile_x, int tile_y, ItemType type);
 
+    // ===== IPosition 実装 =====
+
+// 現在位置（ピクセル座標）を返す
+    int GetPixelPosX() const override { return x_; }
+    int GetPixelPosY() const override { return y_; }
+
+    // 現在位置をタイル座標に変換して返す
+    int GetTilePosX() const override { return x_ / Map::TILE; }
+    int GetTilePosY() const override { return y_ / Map::TILE; }
+
     // アニメーションなどの内部状態を更新する
     void Update();
-
-    // アイテムを描画する
-    void Draw() const;
 
     // プレイヤーがこのアイテムを取得したかどうかを判定する
     bool CheckHit(const Player& player) const;
 
+    // アイテムを描画する
+    void Draw() const;
+
     // アイテムの種類を返す
     ItemType GetType() const;
 
-    // 配置位置をタイル座標で返す
-    int GetTileX() const;
-    int GetTileY() const;
+    static Item CreateRandom(const Map& map, ItemType type);
 
 private:
 

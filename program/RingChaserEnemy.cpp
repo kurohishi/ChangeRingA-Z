@@ -1,11 +1,13 @@
 #include "RingChaserEnemy.h"
 
 #include "DxLib.h"
+#include "Player.h"
 
 // ===== RingChaserEnemy =====
 RingChaserEnemy::RingChaserEnemy()
     : x_(0), y_(0), just_spawned_(true) {
 }
+
 // 開始タイル座標を指定して生成する
 RingChaserEnemy::RingChaserEnemy(int start_tile_x, int start_tile_y)
     :x_(start_tile_x* Map::TILE),
@@ -97,6 +99,13 @@ void RingChaserEnemy::Update(const int dist[Map::H][Map::W], const Map& map)
     // 選んだタイルの左上ピクセル座標へ移動する
     x_ = best_tile_x * Map::TILE;
     y_ = best_tile_y * Map::TILE;
+}
+
+// プレイヤーとのヒット判定
+bool RingChaserEnemy::CheckHit(const Player& player) const
+{
+    return player.GetTilePosX() == GetTilePosX() &&
+        player.GetTilePosY() == GetTilePosY();
 }
 
 // リング追跡敵の描画

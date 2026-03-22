@@ -2,7 +2,8 @@
 
 class Map {
 public:
-    // タイルサイズとマップサイズ
+
+    // タイルとマップのサイズ
     static const int TILE = 32;
     static const int W = 20;
     static const int H = 15;
@@ -48,8 +49,8 @@ public:
     bool CanSwitchRingPos(int tile_x, int tile_y) const;
 
 private:
-    // 現在のマップデータ
-    // 0 は壁、1 は通路を表す
+
+    // マップデータ(0：壁、1 ：通路)
     int data_[H][W] = {
         {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
         {0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0},
@@ -68,6 +69,6 @@ private:
         {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
     };
 
-    // 現在が裏世界状態かどうか
+    // 裏世界状態かどうか
     bool is_alt_world_ = false;
 };

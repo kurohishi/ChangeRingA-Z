@@ -6,14 +6,14 @@
 #include "Map.h"
 
 Portal::Portal(int tile_x, int tile_y, int pair_index)
-    : x_(tile_x), y_(tile_y), pair_index_(pair_index) {
+    : pair_index_(pair_index)
+{
+    SetTilePos(tile_x, tile_y);
 }
-
 void Portal::SetTilePos(int tile_x, int tile_y) {
 
-    // ポータル位置はタイル座標で保持する
-    x_ = tile_x;
-    y_ = tile_y;
+    x_ = tile_x * Map::TILE;
+    y_ = tile_y * Map::TILE;
 }
 
 void Portal::Update() {
@@ -33,10 +33,10 @@ void Portal::DrawPortalBoxWave(float scale) const {
     const int offset = (Map::TILE - size) / 2;
 
     DrawBox(
-        x_ * Map::TILE + offset,
-        y_ * Map::TILE + offset,
-        x_ * Map::TILE + offset + size,
-        y_ * Map::TILE + offset + size,
+        x_ + offset,
+        y_ + offset,
+        x_ + offset + size,
+        y_ + offset + size,
         GetColor(0, 255, 255),
         FALSE);
 }
@@ -60,17 +60,8 @@ void Portal::Draw() {
 
 bool Portal::CheckHit(const Player& player) const {
 
-    // プレイヤーと同じタイル上にいるかで判定する
-    return player.GetTilePosX() == x_ &&
-        player.GetTilePosY() == y_;
-}
-
-int Portal::GetTileX() const {
-    return x_;
-}
-
-int Portal::GetTileY() const {
-    return y_;
+    return player.GetTilePosX() == GetTilePosX() &&
+        player.GetTilePosY() == GetTilePosY();
 }
 
 int Portal::GetPairIndex() const {
