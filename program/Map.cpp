@@ -1,12 +1,33 @@
 ﻿#include "Map.h"
 
 #include "DxLib.h"
+#include "Constants.h"
 
-namespace {
+namespace
+{
+    const int kDefaultMap[Map::H][Map::W] =
+    {
+        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+        {0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0},
+        {0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0},
+        {0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0},
+        {0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0},
+        {0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0},
+        {0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0},
+        {0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0},
+        {0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0},
+        {0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0},
+        {0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0},
+        {0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0},
+        {0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0},
+        {0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0},
+        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+    };
 
     // ===== チュートリアル用マップ =====
 
-    const int kMapTutorialA[Map::H][Map::W] = {
+    const int kMapTutorialA[Map::H][Map::W] =
+    {
         {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
         {0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0},
         {0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0},
@@ -24,7 +45,8 @@ namespace {
         {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
     };
 
-    const int kMapTutorialB[Map::H][Map::W] = {
+    const int kMapTutorialB[Map::H][Map::W] =
+    {
         {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
         {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
         {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
@@ -42,7 +64,8 @@ namespace {
         {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
     };
 
-    const int kMapTutorialC[Map::H][Map::W] = {
+    const int kMapTutorialC[Map::H][Map::W] =
+    {
         {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
         {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
         {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
@@ -62,7 +85,8 @@ namespace {
 
     // ===== 通常プレイ用マップ =====
 
-    const int kMapA[Map::H][Map::W] = {
+    const int kMapA[Map::H][Map::W] =
+    {
         {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
         {0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0},
         {0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0},
@@ -80,7 +104,8 @@ namespace {
         {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
     };
 
-    const int kMapB[Map::H][Map::W] = {
+    const int kMapB[Map::H][Map::W] =
+    {
         {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
         {0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 0},
         {0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0},
@@ -97,20 +122,28 @@ namespace {
         {0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0},
         {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
     };
-
 }  // namespace
 
-bool Map::CanSwitchRingPos(int tile_x, int tile_y) const {
+Map::Map()
+{
+    SetData(kDefaultMap);
+}
 
-    // 表世界・裏世界の両方で通路になっている場所だけ、リングによる世界切り替えを許可する
+// リング位置で世界を切り替えられるかを判定する
+bool Map::CanSwitchRingPos(int tile_x, int tile_y) const
+{
     if (tile_x < 0 || tile_y < 0 || tile_x >= W || tile_y >= H) {
         return false;
     }
 
-    return kMapA[tile_y][tile_x] == 1 && kMapB[tile_y][tile_x] == 1;
+    // 表世界・裏世界の両方で通路になっている場所だけ許可する
+    return kMapA[tile_y][tile_x] == Map::kRoad &&
+        kMapB[tile_y][tile_x] == Map::kRoad;
 }
 
-void Map::SetData(const int src[H][W]) {
+// 外部マップデータを現在のマップへコピーする
+void Map::SetData(const int src[H][W])
+{
     for (int y = 0; y < H; ++y) {
         for (int x = 0; x < W; ++x) {
             data_[y][x] = src[y][x];
@@ -118,46 +151,71 @@ void Map::SetData(const int src[H][W]) {
     }
 }
 
-void Map::UseTutorialMapA() {
+// ===== マップ切り替え =====
+
+void Map::UseTutorialMapA()
+{
     SetData(kMapTutorialA);
 }
 
-void Map::UseTutorialMapB() {
+void Map::UseTutorialMapB()
+{
     SetData(kMapTutorialB);
 }
 
-void Map::UseTutorialMapC() {
+void Map::UseTutorialMapC()
+{
     SetData(kMapTutorialC);
 }
 
-void Map::UseMapA() {
+void Map::UseMapA()
+{
     SetData(kMapA);
 }
 
-void Map::UseMapB() {
+void Map::UseMapB()
+{
     SetData(kMapB);
 }
 
-void Map::SetAltWorld(bool is_alt_world) {
+// 裏世界状態を設定する
+void Map::SetAltWorld(bool is_alt_world)
+{
     is_alt_world_ = is_alt_world;
 }
 
-void Map::Draw() const {
+// ===== 描画 =====
+
+// 現在のマップを描画する
+void Map::Draw() const
+{
     for (int y = 0; y < H; ++y) {
         for (int x = 0; x < W; ++x) {
             int color = 0;
 
-            if (data_[y][x] == 0) {
-                // 壁は世界ごとに配色を変えて、見た目で状態を区別しやすくする
+            if (data_[y][x] == Map::kWall) {
+                // 壁
                 color = is_alt_world_
-                    ? GetColor(120, 40, 120)
-                    : GetColor(80, 80, 80);
+                    ? GetColor(
+                        MapConst::kAltWallColorR,
+                        MapConst::kAltWallColorG,
+                        MapConst::kAltWallColorB)
+                    : GetColor(
+                        MapConst::kWallColorR,
+                        MapConst::kWallColorG,
+                        MapConst::kWallColorB);
             }
             else {
-                // 通路も同様に、裏世界では暗めの色へ変える
+                // 通路
                 color = is_alt_world_
-                    ? GetColor(10, 10, 30)
-                    : GetColor(20, 20, 20);
+                    ? GetColor(
+                        MapConst::kAltFloorColorR,
+                        MapConst::kAltFloorColorG,
+                        MapConst::kAltFloorColorB)
+                    : GetColor(
+                        MapConst::kFloorColorR,
+                        MapConst::kFloorColorG,
+                        MapConst::kFloorColorB);
             }
 
             DrawBox(
@@ -170,8 +228,11 @@ void Map::Draw() const {
         }
     }
 
-    // タイル構造を把握しやすくするためにグリッド線を描画する
-    const int line_color = GetColor(100, 100, 100);
+    // タイル境界を見やすくするためのグリッド線
+    const int line_color = GetColor(
+        MapConst::kGridColorR,
+        MapConst::kGridColorG,
+        MapConst::kGridColorB);
 
     for (int x = 0; x <= W; ++x) {
         const int pixel_x = x * TILE;
@@ -184,7 +245,11 @@ void Map::Draw() const {
     }
 }
 
-bool Map::IsWalkable(int pixel_x, int pixel_y) const {
+// ===== 通行判定 =====
+
+// 指定したピクセル座標が通行可能かを判定する
+bool Map::IsWalkable(int pixel_x, int pixel_y) const
+{
     const int tile_x = pixel_x / TILE;
     const int tile_y = pixel_y / TILE;
 
@@ -192,11 +257,13 @@ bool Map::IsWalkable(int pixel_x, int pixel_y) const {
         return false;
     }
 
-    return data_[tile_y][tile_x] == 1;
+    return data_[tile_y][tile_x] == Map::kRoad;
 }
 
-bool Map::IsWalkableRect(int pixel_x, int pixel_y, int width, int height) const {
-    // 矩形の四隅がすべて通行可能なら、その矩形は移動可能とみなす
+// 指定した矩形領域が通行可能かを判定する
+bool Map::IsWalkableRect(int pixel_x, int pixel_y, int width, int height) const
+{
+    // 四隅がすべて通行可能なら、この矩形は移動可能とみなす
     const int left = pixel_x;
     const int right = pixel_x + width - 1;
     const int top = pixel_y;
@@ -211,26 +278,29 @@ bool Map::IsWalkableRect(int pixel_x, int pixel_y, int width, int height) const 
         return false;
     }
 
-    return data_[tile_y1][tile_x1] == 1 &&
-        data_[tile_y1][tile_x2] == 1 &&
-        data_[tile_y2][tile_x1] == 1 &&
-        data_[tile_y2][tile_x2] == 1;
+    return data_[tile_y1][tile_x1] == Map::kRoad &&
+        data_[tile_y1][tile_x2] == Map::kRoad &&
+        data_[tile_y2][tile_x1] == Map::kRoad &&
+        data_[tile_y2][tile_x2] == Map::kRoad;
 }
 
-bool Map::IsWalkableTile(int tile_x, int tile_y) const {
+// 指定したタイル座標が通行可能かを判定する
+bool Map::IsWalkableTile(int tile_x, int tile_y) const
+{
     if (tile_x < 0 || tile_y < 0 || tile_x >= W || tile_y >= H) {
         return false;
     }
 
-    return data_[tile_y][tile_x] == 1;
+    return data_[tile_y][tile_x] == Map::kRoad;
 }
 
-void Map::GetFirstWalkablePos(int& out_pixel_x, int& out_pixel_y) const {
-    // 初期位置が通行不可だった場合のフォールバック用に、
-    // 左上から最初に見つかった通路を返す
+// 最初に見つかった通行可能マスの位置を返す
+void Map::GetFirstWalkablePos(int& out_pixel_x, int& out_pixel_y) const
+{
+    // 左上から順に探し、最初の通路を返す
     for (int y = 0; y < H; ++y) {
         for (int x = 0; x < W; ++x) {
-            if (data_[y][x] == 1) {
+            if (data_[y][x] == Map::kRoad) {
                 out_pixel_x = x * TILE;
                 out_pixel_y = y * TILE;
                 return;
@@ -238,7 +308,7 @@ void Map::GetFirstWalkablePos(int& out_pixel_x, int& out_pixel_y) const {
         }
     }
 
-    // 万が一通路が存在しない場合の保険
-    out_pixel_x = 10;
-    out_pixel_y = 7;
+    // 万が一通路がない場合の保険
+    out_pixel_x = MapConst::kFallbackTileX * TILE;
+    out_pixel_y = MapConst::kFallbackTileY * TILE;
 }

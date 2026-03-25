@@ -1,53 +1,51 @@
 ﻿#pragma once
 
-#include "IPosition.h"
+#include "GridObject.h"
 #include "Map.h"
 #include "Player.h"
 
-// リングを追跡する敵キャラクター
-// dist 配列をもとに、リングへ近づく方向へ移動する
-class RingChaserEnemy : public IPosition {
+// リングを追跡する敵クラス
+// 距離マップを参照し、リングに近づく方向へ移動する
+class RingChaserEnemy : public GridObject
+{
 public:
-    RingChaserEnemy();
+    // ===== 生成 =====
 
-    // 開始タイル座標を指定して生成する
+    RingChaserEnemy();
     RingChaserEnemy(int start_tile_x, int start_tile_y);
 
-    // 距離マップを参照し、リングへ近づく方向へ更新する
-    void Update(const int dist[Map::H][Map::W], const Map& map);
+    // ===== 更新・描画 =====
 
-	// プレイヤーと同じタイル上にいるか判定する
-    bool CheckHit(const Player& player) const;
+    // 距離マップを参照して移動を更新する
+    void Update(const int dist[Map::H][Map::W], const Map& map);
 
     // 敵を描画する
     void Draw() const;
 
-    // ===== IPosition 実装 =====
+    // ===== 判定 =====
 
-    // 現在位置（ピクセル座標）を返す
-    int GetPixelPosX() const override { return x_; }
-    int GetPixelPosY() const override { return y_; }
+    // プレイヤーと同じタイルにいるかを判定する
+    bool CheckHit(const Player& player) const;
 
-    // ===== サイズ情報 =====
+    // ===== サイズ取得 =====
 
     int GetWidth() const;
     int GetHeight() const;
 
-    // 現在位置をタイル座標に変換して返す
-    int GetTilePosX() const;
-    int GetTilePosY() const;
-
 private:
+    // ===== 基本情報 =====
 
-    int x_ = 0;
-    int y_ = 0;
-    int width_ = 24;
-    int height_ = 24;
+    int width_ = RingChaserConst::kWidth;
+    int height_ = RingChaserConst::kHeight;
+
+    // ===== 移動関連 =====
 
     // 現在の移動方向
-    int dir_x_ = 1;
-    int dir_y_ = 1;
+    int dir_x_ = RingChaserConst::kInitialDirX;
+    int dir_y_ = RingChaserConst::kInitialDirY;
 
-    // 生成直後かどうかを表すフラグ
+    // ===== 状態 =====
+
+    // 生成直後かどうか
     bool just_spawned_ = true;
 };

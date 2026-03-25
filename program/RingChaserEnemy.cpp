@@ -2,43 +2,33 @@
 
 #include "DxLib.h"
 #include "Player.h"
+#include "Constants.h"
 
 // ===== RingChaserEnemy =====
+
 RingChaserEnemy::RingChaserEnemy()
-    : x_(0), y_(0), just_spawned_(true) {
+    : GridObject(0, 0)
+{
 }
 
 // 開始タイル座標を指定して生成する
 RingChaserEnemy::RingChaserEnemy(int start_tile_x, int start_tile_y)
-    :x_(start_tile_x* Map::TILE),
-     y_(start_tile_y* Map::TILE),
-     dir_x_(0),
-     dir_y_(1),
-     width_(Map::TILE),
-     height_(Map::TILE),
-     just_spawned_(true) {
+    : GridObject(start_tile_x, start_tile_y)
+{
 }
 
-int RingChaserEnemy::GetWidth() const {
+int RingChaserEnemy::GetWidth() const
+{
     return width_;
 }
 
-int RingChaserEnemy::GetHeight() const {
+int RingChaserEnemy::GetHeight() const
+{
     return height_;
 }
 
-int RingChaserEnemy::GetTilePosX() const {
-
-    return (x_ + Map::TILE / 2) / Map::TILE;
-}
-
-int RingChaserEnemy::GetTilePosY() const {
-
-    return (y_ + Map::TILE / 2) / Map::TILE;
-}
-
 // 距離マップを参照し、リングへ近づく方向へ更新する
-void RingChaserEnemy::Update(const int dist[Map::H][Map::W], const Map& map) 
+void RingChaserEnemy::Update(const int dist[Map::H][Map::W], const Map& map)
 {
     // 生成直後のフレームは移動しない
     if (just_spawned_) {
@@ -55,7 +45,7 @@ void RingChaserEnemy::Update(const int dist[Map::H][Map::W], const Map& map)
     }
 
     // 到達不能な位置にいる場合は更新しない
-    if (dist[current_tile_y][current_tile_x] == -1) {
+    if (dist[current_tile_y][current_tile_x] == GameConst::kDistUnreachable) {
         return;
     }
 
@@ -64,12 +54,9 @@ void RingChaserEnemy::Update(const int dist[Map::H][Map::W], const Map& map)
     int best_dist = dist[current_tile_y][current_tile_x];
 
     // 4方向のうち、よりリングに近づけるマスを探す
-    const int delta_x[4] = { 1, -1, 0, 0 };
-    const int delta_y[4] = { 0, 0, 1, -1 };
-
-    for (int i = 0; i < 4; ++i) {
-        const int next_tile_x = current_tile_x + delta_x[i];
-        const int next_tile_y = current_tile_y + delta_y[i];
+    for (int i = 0; i < RingChaserConst::kDirectionCount; ++i) {
+        const int next_tile_x = current_tile_x + RingChaserConst::kDeltaX[i];
+        const int next_tile_y = current_tile_y + RingChaserConst::kDeltaY[i];
 
         if (next_tile_x < 0 || next_tile_y < 0 ||
             next_tile_x >= Map::W || next_tile_y >= Map::H) {
@@ -80,7 +67,7 @@ void RingChaserEnemy::Update(const int dist[Map::H][Map::W], const Map& map)
             continue;
         }
 
-        if (dist[next_tile_y][next_tile_x] == -1) {
+        if (dist[next_tile_y][next_tile_x] == GameConst::kDistUnreachable) {
             continue;
         }
 
@@ -104,8 +91,7 @@ void RingChaserEnemy::Update(const int dist[Map::H][Map::W], const Map& map)
 // プレイヤーとのヒット判定
 bool RingChaserEnemy::CheckHit(const Player& player) const
 {
-    return player.GetTilePosX() == GetTilePosX() &&
-        player.GetTilePosY() == GetTilePosY();
+    return IsOnTile(player.GetTilePosX(), player.GetTilePosY());
 }
 
 // リング追跡敵の描画
@@ -119,26 +105,34 @@ void RingChaserEnemy::Draw() const
     const int half_height = height_ / 2;
 
     // 向いている方向を分かりやすくするため、前方に印を描く
-    int position_offset_x = -dir_x_ * half_width / 5;
-    int position_offset_y = -dir_y_ * half_height / 5;
+    int position_offset_x = -dir_x_ * half_width / RingChaserConst::kOffsetDiv;
+    int position_offset_y = -dir_y_ * half_height / RingChaserConst::kOffsetDiv;
 
     int triangle_center_x =
-        center_x - dir_x_ * half_width / 2 ;
+        center_x - dir_x_ * half_width / RingChaserConst::kCenterDiv;
     int triangle_center_y =
-        center_y - dir_y_ * half_height / 2 ;
+        center_y - dir_y_ * half_height / RingChaserConst::kCenterDiv;
+
+    // 位置補正を掛けたい場合に備えて残しておく
+    triangle_center_x -= position_offset_x;
+    triangle_center_y -= position_offset_y;
 
     int tip_x = triangle_center_x + dir_x_ * half_width;
     int tip_y = triangle_center_y + dir_y_ * half_height;
 
-    int left_x = triangle_center_x - dir_y_ * half_width / 3;
-    int left_y = triangle_center_y + dir_x_ * half_height / 3;
+    int left_x = triangle_center_x - dir_y_ * half_width / RingChaserConst::kTriangleSideDiv;
+    int left_y = triangle_center_y + dir_x_ * half_height / RingChaserConst::kTriangleSideDiv;
 
-    int right_x = triangle_center_x + dir_y_ * half_width / 3;
-    int right_y = triangle_center_y - dir_x_ * half_height / 3;
+    int right_x = triangle_center_x + dir_y_ * half_width / RingChaserConst::kTriangleSideDiv;
+    int right_y = triangle_center_y - dir_x_ * half_height / RingChaserConst::kTriangleSideDiv;
 
     DrawTriangle(
         tip_x, tip_y,
         left_x, left_y,
         right_x, right_y,
-        GetColor(255, 255, 0), FALSE);
+        GetColor(
+            RingChaserConst::kTriangleColorR,
+            RingChaserConst::kTriangleColorG,
+            RingChaserConst::kTriangleColorB),
+        FALSE);
 }

@@ -1,53 +1,55 @@
 ﻿#pragma once
 
+#include "GridObject.h"
 #include "Map.h"
 #include "Player.h"
 
 // ワープポータルを表すクラス
-// 位置、描画、プレイヤーとの接触判定を担当する
-class Portal : public IPosition {
-
+// 位置管理、描画、プレイヤーとの接触判定を担当する
+class Portal : public GridObject
+{
 public:
 
-    // 配置位置と接続先ペア番号を指定してポータルを生成する
+    // ===== 生成 =====
+
+    // 配置するタイル座標と接続先ペア番号を指定して生成する
     Portal(int tile_x, int tile_y, int pair_index);
+
+    // ===== 更新・描画 =====
 
     // アニメーション用の内部状態を更新する
     void Update();
 
     // ポータルを描画する
-    void Draw();
+    void Draw() const;
 
-    // プレイヤーがポータルに入ったかどうかを判定する
+    // ===== 判定 =====
+
+    // プレイヤーがポータルに入ったかを判定する
     bool CheckHit(const Player& player) const;
 
-    // ===== IPosition 実装 =====
+    // ===== 座標設定 =====
 
-    // 現在位置（ピクセル座標）を返す
-    int GetPixelPosX() const override { return x_; }
-    int GetPixelPosY() const override { return y_; }
+    // 配置位置をタイル座標で設定する
+    void SetTilePos(int tile_x, int tile_y) override;
 
-    // 現在位置をタイル座標に変換して返す
-    int GetTilePosX() const override { return x_ / Map::TILE; }
-    int GetTilePosY() const override { return y_ / Map::TILE; }
+    // ===== 情報取得 =====
 
     // 接続先ペア番号を返す
     int GetPairIndex() const;
 
-    // 配置位置をタイル座標で設定する
-    void SetTilePos(int tile_x, int tile_y);
-
 private:
-    // 配置位置（ピクセル座標）
-    int x_ = 0;
-    int y_ = 0;
 
-    // 接続先ポータルを識別するための番号
+    // ===== 基本情報 =====
+
+    // 接続先ポータルを識別する番号
     int pair_index_ = 0;
 
-    // 描画アニメーション用の進行値
+    // ===== 演出用パラメータ =====
+
+    // 描画アニメーションの進行値
     float anim_ = 0.0f;
 
-    // 拡縮率を受け取り、波打つようなポータル枠を描画する
+    // 拡縮率に応じて波打つポータル枠を描画する
     void DrawPortalBoxWave(float scale) const;
 };

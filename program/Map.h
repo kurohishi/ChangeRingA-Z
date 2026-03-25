@@ -1,18 +1,34 @@
 ﻿#pragma once
 
-class Map {
+class Map
+{
 public:
+    // ===== 生成 =====
 
-    // タイルとマップのサイズ
-    static const int TILE = 32;
-    static const int W = 20;
-    static const int H = 15;
+    Map();
+
+    // ===== 定数 =====
+
+    // タイルサイズとマップ全体のサイズ
+    static constexpr int TILE = 32;
+    static constexpr int W = 20;
+    static constexpr int H = 15;
+
+    // 地形ID
+    static constexpr int kWall = 0;
+    static constexpr int kRoad = 1;
+
+    // ===== サイズ取得 =====
 
     int GetWidth() const { return W; }
     int GetHeight() const { return H; }
 
+    // ===== 描画 =====
+
     // 現在のマップを描画する
     void Draw() const;
+
+    // ===== 通行判定 =====
 
     // 指定したピクセル座標が通行可能かを判定する
     bool IsWalkable(int pixel_x, int pixel_y) const;
@@ -24,11 +40,15 @@ public:
     bool IsWalkableTile(int tile_x, int tile_y) const;
 
     // 最初に見つかった通行可能マスの位置を返す
-    // 出力値はピクセル座標で返す
+    // 出力値はピクセル座標
     void GetFirstWalkablePos(int& out_pixel_x, int& out_pixel_y) const;
+
+    // ===== マップデータ設定 =====
 
     // 外部のマップデータを現在のマップへコピーする
     void SetData(const int src[H][W]);
+
+    // ===== マップ切り替え =====
 
     // チュートリアル用マップへ切り替える
     void UseTutorialMapA();
@@ -38,6 +58,8 @@ public:
     // 通常プレイ用マップへ切り替える
     void UseMapA();
     void UseMapB();
+
+    // ===== 裏世界状態 =====
 
     // 裏世界状態を設定する
     void SetAltWorld(bool is_alt_world);
@@ -49,26 +71,9 @@ public:
     bool CanSwitchRingPos(int tile_x, int tile_y) const;
 
 private:
+    // 現在のマップデータ
+    int data_[H][W] = {};
 
-    // マップデータ(0：壁、1 ：通路)
-    int data_[H][W] = {
-        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-        {0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0},
-        {0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0},
-        {0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0},
-        {0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0},
-        {0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0},
-        {0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0},
-        {0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0},
-        {0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0},
-        {0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0},
-        {0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0},
-        {0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0},
-        {0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0},
-        {0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0},
-        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
-    };
-
-    // 裏世界状態かどうか
+    // 現在が裏世界かどうか
     bool is_alt_world_ = false;
 };

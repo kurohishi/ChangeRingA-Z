@@ -4,12 +4,17 @@
 
 #include "DxLib.h"
 #include "SoundID.h"
+#include "Constants.h"
+
+// ===== 静的メンバ =====
 
 // 読み込んだサウンドハンドル一覧
 std::map<int, int> SoundManager::sounds;
 
-// 現在再生中の BGM の ID（何も再生していないときは -1）
-int SoundManager::currentBGM = -1;
+// 現在再生中の BGM ID
+int SoundManager::currentBGM = SoundConst::kNoBgm;
+
+// ===== SoundManager =====
 
 // サウンドデータを読み込む
 void SoundManager::Load()
@@ -32,46 +37,47 @@ void SoundManager::Load()
     sounds[SE_ENEMY_SPAWN] = LoadSoundMem("sound/ring_se.mp3");
 }
 
-// サウンドデータを消去する
+// サウンドデータを解放する
 void SoundManager::Release()
 {
-    for (auto& sound_pair : sounds)
-    {
+    for (const auto& sound_pair : sounds) {
         DeleteSoundMem(sound_pair.second);
     }
 
     sounds.clear();
-    currentBGM = -1;
+    currentBGM = SoundConst::kNoBgm;
 }
 
 // BGM を再生する
 void SoundManager::PlayBGM(int sound_id)
 {
     // 同じ BGM がすでに再生中なら何もしない
-    if (currentBGM == sound_id) return;
+    if (currentBGM == sound_id) {
+        return;
+    }
 
     StopBGM();
 
-    int sound_handle = sounds[sound_id];
-    ChangeVolumeSoundMem(100, sound_handle);
-
+    const int sound_handle = sounds[sound_id];
+    ChangeVolumeSoundMem(SoundConst::kDefaultVolume, sound_handle);
     PlaySoundMem(sound_handle, DX_PLAYTYPE_LOOP);
+
     currentBGM = sound_id;
 }
 
-// 再生中の BGMを停止する
+// 再生中の BGM を停止する
 void SoundManager::StopBGM()
 {
-    if (currentBGM >= 0){
+    if (currentBGM >= 0) {
         StopSoundMem(sounds[currentBGM]);
-        currentBGM = -1;
+        currentBGM = SoundConst::kNoBgm;
     }
 }
 
 // SE を再生する
 void SoundManager::PlaySE(int sound_id)
 {
-    int sound_handle = sounds[sound_id];
-    ChangeVolumeSoundMem(100, sound_handle);
+    const int sound_handle = sounds[sound_id];
+    ChangeVolumeSoundMem(SoundConst::kDefaultVolume, sound_handle);
     PlaySoundMem(sound_handle, DX_PLAYTYPE_BACK);
 }

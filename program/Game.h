@@ -5,17 +5,17 @@
 #include "Map.h"
 #include "Player.h"
 #include "Ring.h"
-#include "Enemy.h"
+#include "PatrolEnemy.h"
 #include "RingChaserEnemy.h"
 #include "Portal.h"
 #include "Item.h"
 #include "TutorialManager.h"
+#include "SignalManager.h"
 
-//==================================================
-// 画面状態
-//==================================================
+// ===== シーン種別 =====
 
-enum class SceneType {
+enum class SceneType
+{
     TITLE,
     TUTORIAL,
     GUIDE,
@@ -25,11 +25,10 @@ enum class SceneType {
     CLEAR
 };
 
-//==================================================
-// セーブデータ
-//==================================================
+// ===== セーブデータ =====
 
-struct GameState {
+struct GameState
+{
     int playerTileX = 0;
     int playerTileY = 0;
 
@@ -43,41 +42,53 @@ struct GameState {
 
     double clearTime = 0.0;
 
-    std::vector<Enemy> enemiesA;
-    std::vector<Enemy> enemiesB;
+    std::vector<PatrolEnemy> enemiesA;
+    std::vector<PatrolEnemy> enemiesB;
 };
 
-//==================================================
-// ゲーム本体
-//==================================================
+// ===== ゲーム本体 =====
 
-class Game {
+class Game
+{
 public:
     Game();
+
+    // ===== 更新・描画 =====
 
     void Update();
     void Draw();
 
-private:
+    // ===== 入力 =====
 
-    // チュートリアルから内部状態へアクセスするために使用
-    friend class TutorialManager;
+    bool IsKeyTrigger(int keyCode) const;
 
-    //==================================================
-    // 初期化・開始
-    //==================================================
+    // ===== 初期化・開始 =====
 
     void ResetGame();
     void SetupTutorialStage();
     void StartCountDown();
     void StartPlay();
-
     void SaveGameState();
     void LoadGameState();
 
-    //==================================================
-    // 更新処理
-    //==================================================
+    // ===== TutorialManager 用の公開関数 =====
+    SignalManager& GetSignalManager() { return signal_manager_; }
+    const SignalManager& GetSignalManager() const { return signal_manager_; }
+
+    bool IsPlayerOnTile(int tile_x, int tile_y) const;
+    bool IsAnyChaserOnTile(int tile_x, int tile_y) const;
+    char GetCurrentAlphabet() const;
+    char GetPreviousAlphabet() const;
+
+    void StartTutorialWorldShiftScene();
+    void StartTutorialChaserScene();
+    void AdvanceTutorialAfterChaserReachedRing();
+    void SetupTutorialCorneredScene();
+    void ResetAfterTutorialCollapse();
+
+private:
+
+    // ===== シーン更新 =====
 
     void UpdateTitle();
     void UpdateTutorial();
@@ -87,9 +98,7 @@ private:
     void UpdateResumeMenu();
     void UpdateClear();
 
-    //==================================================
-    // 描画処理
-    //==================================================
+    // ===== シーン描画 =====
 
     void DrawTitle() const;
     void DrawTutorial();
@@ -99,18 +108,14 @@ private:
     void DrawResume() const;
     void DrawClear();
 
-    //==================================================
-    // ゲーム進行補助
-    //==================================================
+    // ===== ゲーム進行補助 =====
 
     void UpdateAlphabet();
     void DownAlphabet();
-    void CheckSpawnEnemy();
+    void CheckSpawnPatrolEnemy();
     void ToggleWorld();
 
-    //==================================================
-    // 配置・判定
-    //==================================================
+    // ===== 配置・判定 =====
 
     void AddPortals();
     void AddChaseEnemies();
@@ -120,127 +125,101 @@ private:
     bool HasItem(ItemType type) const;
     int CountItems(ItemType type) const;
 
-    //==================================================
-    // 入力補助
-    //==================================================
-
-    bool IsKeyTrigger(int keyCode) const;
-
 private:
-    //==================================================
-    // 管理オブジェクト
-    //==================================================
+    // ===== 管理オブジェクト =====
 
-    TutorialManager tutorialManager;
-    DialogueBox dialogue;
+    TutorialManager tutorial_manager_;
+    DialogueBox dialogue_;
+    SignalManager signal_manager_;
 
-    //==================================================
-    // シーン・進行状態
-    //==================================================
+    // ===== シーン・進行状態 =====
 
-    SceneType scene = SceneType::TITLE;
+    SceneType scene_ = SceneType::TITLE;
 
-    bool isFirstLaunch = true;
-    bool hasSavedData = false;
-    bool isClear = false;
-    bool isAltWorld = false;
+    bool is_first_launch_ = true;
+    bool has_saved_data_ = false;
+    bool is_clear_ = false;
+    bool is_alt_world_ = false;
 
-    GameState savedState;
+    GameState saved_state_;
 
-    char currentAlphabet = 'A';
-    char prevAlphabet = '\0';
+    char current_alphabet_ = GameConst::kInitialAlphabet;
+    char prev_alphabet_ = GameConst::kNoAlphabet;
 
-    double clearTime = 0.0;
+    double clear_time_ = 0.0;
 
-    //==================================================
-    // ゲームオブジェクト
-    //==================================================
+    // ===== ゲームオブジェクト =====
 
-    Map map;
-    Player player;
-    Ring ring;
+    Map map_;
+    Player player_;
+    Ring ring_;
 
-    //==================================================
-    // 敵・ギミック・アイテム
-    //==================================================
+    // ===== 敵・ギミック・アイテム =====
 
-    std::vector<Enemy> enemiesA;
-    std::vector<Enemy> enemiesB;
-    std::vector<Enemy>* currentEnemies = nullptr;
+    std::vector<PatrolEnemy> enemies_a_;
+    std::vector<PatrolEnemy> enemies_b_;
+    std::vector<PatrolEnemy>* current_enemies_ = nullptr;
 
-    std::vector<RingChaserEnemy> chasers;
-    std::vector<Portal> portals;
-    std::vector<Item> items;
+    std::vector<RingChaserEnemy> chasers_;
+    std::vector<Portal> portals_;
+    std::vector<Item> items_;
 
-    int alphabetBoostCount = 0;
+    int alphabet_boost_count_ = 0;
 
-    //==================================================
-    // ワープ関連
-    //==================================================
+    // ===== ワープ関連 =====
 
-    bool isWarping = false;
-    bool playerOnPortal = false;
-    int portalCooldown = 0;
-    int warpFromIndex = -1;
-    long long warpStartTime = 0;
-    static const int WARP_WAIT = 1000000;
+    bool is_warping_ = false;
+    bool player_on_portal_ = false;
+    int portal_cooldown_ = 0;
+    int warp_from_index_ = GameConst::kInvalidIndex;
+    long long warp_start_time_ = 0;
 
-    //==================================================
-    // 敵移動関連
-    //==================================================
+    static const int kWarpWait = GameConst::kWaitMicroseconds;
 
-    int enemyMoveDelay = 1;
-    int nextEnemyMoveDelay = 1;
-    int playerMoveCount = 0;
-    int delayItemTimer = 0;
+    // ===== 敵移動関連 =====
 
-    //==================================================
-    // タイマー
-    //==================================================
+    int enemy_move_delay_ = 1;
+    int next_enemy_move_delay_ = 1;
+    int player_move_count_ = 0;
+    int delay_item_timer_ = 0;
 
-    long long startTime = 0;
-    long long countStartTime = 0;
-    int count = 0;
+    // ===== タイマー =====
 
-    //==================================================
-    // 入力
-    //==================================================
+    long long start_time_ = 0;
+    long long count_start_time_ = 0;
+    int count_ = 0;
 
-    char key[256] = {};
-    char prevKey[256] = {};
+    // ===== 入力 =====
 
-    //==================================================
-    // 距離マップ
-    //==================================================
+    char key_[GameConst::kKeyBufferSize] = {};
+    char prev_key_[GameConst::kKeyBufferSize] = {};
 
-    int dist[Map::H][Map::W] = {};
+    // ===== 距離マップ =====
 
-    //==================================================
-    // UI状態
-    //==================================================
+    int dist_[Map::H][Map::W] = {};
 
-    int titleFrame = 0;
-    int tutorialFrame = 0;
-    int guideFrame = 0;
+    // ===== UI 状態 =====
 
-    bool isSkipPopup = false;
-    int skipIndex = 0;
-    int resumeIndex = 0;
+    int title_frame_ = 0;
+    int tutorial_frame_ = 0;
+    int guide_frame_ = 0;
 
-    //==================================================
-    // フォント
-    //==================================================
+    bool is_skip_popup_ = false;
+    int skip_index_ = 0;
+    int resume_index_ = 0;
 
-    int logoFont = -1;
-    int pressFont = -1;
-    int subLogoFont = -1;
+    // ===== フォント =====
 
-    int tutorialBigFont = -1;
-    int skipFont = -1;
+    int logo_font_ = GameConst::kInvalidFontHandle;
+    int press_font_ = GameConst::kInvalidFontHandle;
+    int sub_logo_font_ = GameConst::kInvalidFontHandle;
 
-    int guideTitleFont = -1;
-    int guideFont = -1;
-    int guideBigFont = -1;
+    int tutorial_big_font_ = -1;
+    int skip_font_ = -1;
 
-    int countFont = -1;
+    int guide_title_font_ = -1;
+    int guide_font_ = -1;
+    int guide_big_font_ = -1;
+
+    int count_font_ = -1;
 };

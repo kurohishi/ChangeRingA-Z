@@ -1,58 +1,53 @@
 ﻿#pragma once
 
-#include "IPosition.h"
+#include "GridObject.h"
 #include "Map.h"
 #include "Player.h"
 
 // アイテムの種類
-enum class ItemType {
-    SLOW_ENEMY,
-    BOOST_ALPHABET
+enum class ItemType
+{
+    SLOW_ENEMY,     // 敵の動きを遅くする
+    BOOST_ALPHABET  // 次のアルファベット進行を強化する
 };
 
-// マップ上に配置されるアイテム ※位置管理、描画、取得判定を担当
-class Item : public IPosition {
-
+// マップ上に配置されるアイテム
+// 位置管理、更新、描画、取得判定を担当する
+class Item : public GridObject
+{
 public:
-    // 配置タイル座標と種類を指定してアイテムを生成する
+    // ===== 生成 =====
+
+    // 配置するタイル座標と種類を指定して生成
     Item(int tile_x, int tile_y, ItemType type);
 
-    // ===== IPosition 実装 =====
-
-// 現在位置（ピクセル座標）を返す
-    int GetPixelPosX() const override { return x_; }
-    int GetPixelPosY() const override { return y_; }
-
-    // 現在位置をタイル座標に変換して返す
-    int GetTilePosX() const override { return x_ / Map::TILE; }
-    int GetTilePosY() const override { return y_ / Map::TILE; }
-
-    // アニメーションなどの内部状態を更新する
-    void Update();
-
-    // プレイヤーがこのアイテムを取得したかどうかを判定する
-    bool CheckHit(const Player& player) const;
-
-    // アイテムを描画する
-    void Draw() const;
-
-    // アイテムの種類を返す
-    ItemType GetType() const;
-
+    // ランダムな通行可能タイルに生成
     static Item CreateRandom(const Map& map, ItemType type);
 
-private:
+    // ===== 更新・描画 =====
 
-    // 配置位置（タイル座標）
-    int x_ = 0;
-    int y_ = 0;
+    // アニメーションなどの内部状態を更新
+    void Update();
+
+    // アイテムを描画
+    void Draw() const;
+
+    // ===== 判定・取得 =====
+
+    // プレイヤーがこのアイテムを取得したか判定
+    bool CheckHit(const Player& player) const;
+
+    // アイテムの種類を取得
+    ItemType GetType() const;
+
+private:
+    // ===== 基本情報 =====
 
     // アイテムの種類
     ItemType type_;
 
-    // 浮遊や点滅などの演出に使うアニメーション用パラメータ
-    float anim_ = 0.0f;
+    // ===== 演出用パラメータ =====
 
-    // スプライト切り替えや演出段階の管理に使うフレーム値
+    // スプライト切り替えや演出進行に使うフレーム
     int item_frame_ = 0;
 };

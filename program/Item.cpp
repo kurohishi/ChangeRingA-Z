@@ -4,76 +4,143 @@
 
 #include "DxLib.h"
 #include "Map.h"
+#include "Constants.h"
 
+// ===== Item =====
+
+// タイル座標と種類を指定してアイテムを生成する
 Item::Item(int tile_x, int tile_y, ItemType type)
-    : type_(type) {
-    x_ = tile_x * Map::TILE;
-    y_ = tile_y * Map::TILE;
+    : GridObject(tile_x, tile_y)
+    , type_(type)
+{
 }
 
+// ランダムな通行可能タイルにアイテムを生成する
 Item Item::CreateRandom(const Map& map, ItemType type)
 {
-    int posX = 0;
-    int posY = 0;
+    int tile_x = 0;
+    int tile_y = 0;
 
     do {
-        posX = GetRand(Map::W - 1);
-        posY = GetRand(Map::H - 1);
-    } while (!map.IsWalkableTile(posX, posY));
+        tile_x = GetRand(Map::W - 1);
+        tile_y = GetRand(Map::H - 1);
+    } while (!map.IsWalkableTile(tile_x, tile_y));
 
-    return Item(posX, posY, type);
+    return Item(tile_x, tile_y, type);
 }
 
-void Item::Update() {
-    // 演出用パラメータを進める
-    anim_ += 0.05f;
+// アニメーション用の内部状態を更新する
+void Item::Update()
+{
     ++item_frame_;
 }
 
+// プレイヤーと同じタイル上にいるかを判定する
 bool Item::CheckHit(const Player& player) const
 {
-    return player.GetTilePosX() == GetTilePosX() &&
-        player.GetTilePosY() == GetTilePosY();
+    return IsOnTile(player.GetTilePosX(), player.GetTilePosY());
 }
 
-void Item::Draw() const {
-
-    // タイル座標を描画用の中心ピクセル座標へ変換する
+// アイテムを描画する
+void Item::Draw() const
+{
+    // 描画用の中心座標
     const int center_x = x_ + Map::TILE / 2;
     const int center_y = y_ + Map::TILE / 2;
 
-    // フレーム数をもとに色がゆっくり変化するアニメーションを作る
-    const double time = item_frame_ * 0.05;
-    const double wave = (std::sin(time) + 1.0) * 0.5;
+    // 色変化アニメーション用の波
+    const double time = item_frame_ * ItemConst::kColorWaveSpeed;
+    const double wave =
+        (std::sin(time) + ItemConst::kColorWaveBase) * ItemConst::kColorWaveScale;
 
-    if (type_ == ItemType::SLOW_ENEMY)
-    {
-        // 色を水色?赤で変化させる
-        const int red = static_cast<int>(200 * wave);
-        const int green = 200;
-        const int blue = static_cast<int>(200 * (1.0 - wave));
+    // アイテムの種類によって描画を変える
+    if (type_ == ItemType::SLOW_ENEMY) {
+        const int red = static_cast<int>(ItemConst::kBaseColor * wave);
+        const int green = ItemConst::kBaseColor;
+        const int blue = static_cast<int>(ItemConst::kBaseColor * (1.0 - wave));
 
-        DrawCircle(center_x, center_y, 11, GetColor(200, 180, 255), TRUE);
-        DrawCircle(center_x, center_y, 10, GetColor(0, 0, 0), TRUE);
-        DrawCircle(center_x, center_y, 8, GetColor(red, green, blue), TRUE);
-        DrawCircle(center_x, center_y, 6, GetColor(0, 0, 0), TRUE);
-        DrawCircle(center_x, center_y, 4, GetColor(255, 255, 255), TRUE);
+        DrawCircle(
+            center_x,
+            center_y,
+            ItemConst::kOuterRadius,
+            GetColor(ItemConst::kFrameR, ItemConst::kFrameG, ItemConst::kFrameB),
+            TRUE);
+
+        DrawCircle(
+            center_x,
+            center_y,
+            ItemConst::kOuterInnerRadius,
+            GetColor(ItemConst::kBlackR, ItemConst::kBlackG, ItemConst::kBlackB),
+            TRUE);
+
+        DrawCircle(
+            center_x,
+            center_y,
+            ItemConst::kMiddleRadius,
+            GetColor(red, green, blue),
+            TRUE);
+
+        DrawCircle(
+            center_x,
+            center_y,
+            ItemConst::kInnerRadius,
+            GetColor(ItemConst::kBlackR, ItemConst::kBlackG, ItemConst::kBlackB),
+            TRUE);
+
+        DrawCircle(
+            center_x,
+            center_y,
+            ItemConst::kCoreRadius,
+            GetColor(ItemConst::kWhiteR, ItemConst::kWhiteG, ItemConst::kWhiteB),
+            TRUE);
     }
-    else if (type_ == ItemType::BOOST_ALPHABET)
-    {
-		// 色を赤?青で変化させる
-        const int red = static_cast<int>(200 * wave);
-        const int green = static_cast<int>(200 * (1.0 - wave));
-        const int blue = 200;
+    else if (type_ == ItemType::BOOST_ALPHABET) {
+        const int red = static_cast<int>(ItemConst::kBaseColor * wave);
+        const int green = static_cast<int>(ItemConst::kBaseColor * (1.0 - wave));
+        const int blue = ItemConst::kBaseColor;
 
-        DrawCircle(center_x, center_y, 11, GetColor(200, 180, 255), TRUE);
-        DrawCircle(center_x, center_y, 10, GetColor(0, 0, 0), TRUE);
-        DrawCircle(center_x, center_y, 8, GetColor(255, 255, 0), TRUE);
-        DrawCircle(center_x, center_y, 6, GetColor(0, 0, 0), TRUE);
-        DrawCircle(center_x, center_y, 4, GetColor(red, green, blue), TRUE);
+        DrawCircle(
+            center_x,
+            center_y,
+            ItemConst::kOuterRadius,
+            GetColor(ItemConst::kFrameR, ItemConst::kFrameG, ItemConst::kFrameB),
+            TRUE);
+
+        DrawCircle(
+            center_x,
+            center_y,
+            ItemConst::kOuterInnerRadius,
+            GetColor(ItemConst::kBlackR, ItemConst::kBlackG, ItemConst::kBlackB),
+            TRUE);
+
+        DrawCircle(
+            center_x,
+            center_y,
+            ItemConst::kMiddleRadius,
+            GetColor(
+                ItemConst::kBoostFixedR,
+                ItemConst::kBoostFixedG,
+                ItemConst::kBoostFixedB),
+            TRUE);
+
+        DrawCircle(
+            center_x,
+            center_y,
+            ItemConst::kInnerRadius,
+            GetColor(ItemConst::kBlackR, ItemConst::kBlackG, ItemConst::kBlackB),
+            TRUE);
+
+        DrawCircle(
+            center_x,
+            center_y,
+            ItemConst::kCoreRadius,
+            GetColor(red, green, blue),
+            TRUE);
     }
 }
 
-ItemType Item::GetType() const {
+// アイテムの種類を返す
+ItemType Item::GetType() const
+{
     return type_;
 }

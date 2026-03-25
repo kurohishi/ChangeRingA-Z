@@ -1,5 +1,7 @@
-﻿#include "DxLib.h"
+﻿#include <Windows.h>
+#include "DxLib.h"
 #include "Game.h"
+#include "Constants.h"
 #include "SoundManager.h"
 
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
@@ -8,7 +10,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     ChangeWindowMode(TRUE);
 
     // 画面サイズを設定する
-    SetGraphMode(640, 480, 32);
+    SetGraphMode(GameConst::kScreenWidth, GameConst::kScreenHeight, 32);
 
     // DxLib を初期化する
     if (DxLib_Init() == -1)
