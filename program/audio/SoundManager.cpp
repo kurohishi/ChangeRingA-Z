@@ -4,9 +4,7 @@
 
 #include "DxLib.h"
 #include "SoundID.h"
-#include "Constants.h"
-
-// ===== 静的メンバ =====
+#include "GameConstants.h"
 
 // 読み込んだサウンドハンドル一覧
 std::map<int, int> SoundManager::sounds;

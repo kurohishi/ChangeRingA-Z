@@ -29,37 +29,35 @@ public:
 
     // ===== 当たり判定 =====
 
-    // プレイヤーと同じタイルにいるかを判定
     bool CheckHit(const Player& player) const;
 
     // ===== 座標操作 =====
 
-    // 指定したタイル座標の位置に敵を配置する
     void SetTilePos(int tile_x, int tile_y) override;
 
-    // ===== サイズ取得 =====
+    // ===== 巡回ルート =====
 
-    int GetWidth() const { return width_; }
-    int GetHeight() const { return height_; }
+    void SetPatrolRoute(const std::vector<PatrolPoint>& route);
+    bool HasPatrolRoute() const;
+    const std::vector<PatrolPoint>& GetPatrolRoute() const;
+
+    // ルート未指定なら、その場で自動生成する
+    void EnsureAutoRoute(const Map& map);
 
 private:
+    void GenerateAutoRoute(const Map& map);
 
-    // ===== サイズ =====
+    bool IsInside(int tile_x, int tile_y) const;
+    bool IsWalkableTile(const Map& map, int tile_x, int tile_y) const;
+    bool ContainsPoint(
+        const std::vector<PatrolPoint>& route,
+        int tile_x,
+        int tile_y) const;
 
-    int width_ = PatrolEnemyConst::kWidth;
-    int height_ = PatrolEnemyConst::kHeight;
-
-    // ===== 移動設定 =====
-
-    int dir_x_ = PatrolEnemyConst::kInitialDirX;
-    int dir_y_ = PatrolEnemyConst::kInitialDirY;
-    int speed_ = 0;
-
-    // ===== 巡回ルート情報 =====
-
-    // 巡回ルートはタイル座標で保持
+private:
     std::vector<PatrolPoint> patrol_route_;
-
-    // 現在向かっている巡回先のインデックス
     int current_index_ = 0;
+
+    int dir_x_ = 0;
+    int dir_y_ = 1;
 };

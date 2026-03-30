@@ -1,7 +1,7 @@
 ﻿#pragma once
 
 #include "Map.h"
-#include "Constants.h"
+#include "GameConstants.h"
 
 class IPosition;
 
@@ -21,18 +21,18 @@ public:
     int GetPixelPosY() const { return y_; }
 
     // 現在のタイル座標を返す
-    int GetTilePosX() const { return x_ / Map::TILE; }
-    int GetTilePosY() const { return y_ / Map::TILE; }
+    int GetTilePosX() const { return x_ / MapConst::kMapTile; }
+    int GetTilePosY() const { return y_ / MapConst::kMapTile; }
 
     // 現在いるタイルの中心座標を返す
     int GetTileCenterX() const
     {
-        return GetTilePosX() * Map::TILE + Map::TILE / 2;
+        return GetTilePosX() * MapConst::kMapTile + MapConst::kMapTile / 2;
     }
 
     int GetTileCenterY() const
     {
-        return GetTilePosY() * Map::TILE + Map::TILE / 2;
+        return GetTilePosY() * MapConst::kMapTile + MapConst::kMapTile / 2;
     }
 
     // 次回移動先として予約されているピクセル座標を返す

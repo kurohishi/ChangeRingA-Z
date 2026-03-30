@@ -2,10 +2,9 @@
 
 #include "DxLib.h"
 #include "Player.h"
-#include "Constants.h"
+#include "GameConstants.h"
 
-// ===== RingChaserEnemy =====
-
+// 開始タイル座標は (0, 0)
 RingChaserEnemy::RingChaserEnemy()
     : GridObject(0, 0)
 {
@@ -17,16 +16,6 @@ RingChaserEnemy::RingChaserEnemy(int start_tile_x, int start_tile_y)
 {
 }
 
-int RingChaserEnemy::GetWidth() const
-{
-    return width_;
-}
-
-int RingChaserEnemy::GetHeight() const
-{
-    return height_;
-}
-
 // 距離マップを参照し、リングへ近づく方向へ更新する
 void RingChaserEnemy::Update(const int dist[Map::H][Map::W], const Map& map)
 {
@@ -36,8 +25,8 @@ void RingChaserEnemy::Update(const int dist[Map::H][Map::W], const Map& map)
         return;
     }
 
-    const int current_tile_x = x_ / Map::TILE;
-    const int current_tile_y = y_ / Map::TILE;
+    const int current_tile_x = x_ / MapConst::kMapTile;
+    const int current_tile_y = y_ / MapConst::kMapTile;
 
     if (current_tile_x < 0 || current_tile_y < 0 ||
         current_tile_x >= Map::W || current_tile_y >= Map::H) {
@@ -84,8 +73,8 @@ void RingChaserEnemy::Update(const int dist[Map::H][Map::W], const Map& map)
     dir_y_ = best_tile_y - current_tile_y;
 
     // 選んだタイルの左上ピクセル座標へ移動する
-    x_ = best_tile_x * Map::TILE;
-    y_ = best_tile_y * Map::TILE;
+    x_ = best_tile_x * MapConst::kMapTile;
+    y_ = best_tile_y * MapConst::kMapTile;
 }
 
 // プレイヤーとのヒット判定
@@ -98,11 +87,11 @@ bool RingChaserEnemy::CheckHit(const Player& player) const
 void RingChaserEnemy::Draw() const
 {
     // ===== 三角形 =====
-    const int center_x = x_ + Map::TILE / 2;
-    const int center_y = y_ + Map::TILE / 2;
+    const int center_x = x_ + MapConst::kMapTile / 2;
+    const int center_y = y_ + MapConst::kMapTile / 2;
 
-    const int half_width = width_ / 2;
-    const int half_height = height_ / 2;
+    const int half_width = RingChaserConst::kWidth / 2;
+    const int half_height = RingChaserConst::kHeight / 2;
 
     // 向いている方向を分かりやすくするため、前方に印を描く
     int position_offset_x = -dir_x_ * half_width / RingChaserConst::kOffsetDiv;

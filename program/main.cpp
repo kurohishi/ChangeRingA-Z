@@ -1,7 +1,7 @@
 ﻿#include <Windows.h>
 #include "DxLib.h"
 #include "Game.h"
-#include "Constants.h"
+#include "GameConstants.h"
 #include "SoundManager.h"
 
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)

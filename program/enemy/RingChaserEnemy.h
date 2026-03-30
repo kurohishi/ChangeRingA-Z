@@ -27,17 +27,7 @@ public:
     // プレイヤーと同じタイルにいるかを判定する
     bool CheckHit(const Player& player) const;
 
-    // ===== サイズ取得 =====
-
-    int GetWidth() const;
-    int GetHeight() const;
-
 private:
-    // ===== 基本情報 =====
-
-    int width_ = RingChaserConst::kWidth;
-    int height_ = RingChaserConst::kHeight;
-
     // ===== 移動関連 =====
 
     // 現在の移動方向

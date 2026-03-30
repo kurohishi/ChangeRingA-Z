@@ -1,48 +1,16 @@
 ﻿#include "TutorialManager.h"
 
 #include <string>
-#include <vector>
-#include <initializer_list>
 
+#include "GameConstants.h"
 #include "DxLib.h"
 #include "Game.h"
-#include "Constants.h"
+#include "GameTexts.h"
 #include "Map.h"
 
-namespace {
-
-    // ===== 巡回ルート定義 =====
-
-    const std::vector<PatrolPoint> kRouteTutorialB1 = {
-        {14, 7}
-    };
-
-    const std::vector<PatrolPoint> kRouteTutorialB2 = {
-        {7, 7}, {11, 7}, {5, 7}
-    };
-
-    const std::vector<PatrolPoint> kRouteTutorialB3 = {
-        {4, 9}, {4, 7}, {6, 7}, {6, 9}
-    };
-
-    // ===== チュートリアル専用座標 =====
-
-    constexpr int kWorldShiftNextRingX = 1;
-    constexpr int kWorldShiftNextRingY = 7;
-
-    constexpr int kChaserStartX = 18;
-    constexpr int kChaserStartY = 7;
-
-    constexpr int kAfterChaserReachRingNextX = 15;
-    constexpr int kAfterChaserReachRingNextY = 5;
-
-    constexpr int kCorneredNextRingX = 11;
-    constexpr int kCorneredNextRingY = 11;
-
-    constexpr int kSpeedEffectStepThreshold = 2;
-
-    // ===== 会話進行用補助 =====
-
+namespace
+{
+    // ===== 会話進行入力 =====
     void AdvanceTalkOnEnter(Game& game, int& talk)
     {
         if (game.IsKeyTrigger(KEY_INPUT_RETURN)) {
@@ -50,18 +18,9 @@ namespace {
         }
     }
 
-    void ShowTalkLine(
-        DialogueBox& dialogue,
-        int talk,
-        std::initializer_list<const char*> lines)
-    {
-        const std::vector<const char*> line_list(lines);
+	// ===== 会話表示補助 =====
 
-        if (talk >= 0 && talk < static_cast<int>(line_list.size())) {
-            dialogue.Show(line_list[talk]);
-        }
-    }
-
+     // 次のフェーズに切り替える（会話の進行度をリセット/セリフを非表示にする
     void ChangePhase(
         TutorialPhase& phase,
         int& talk,
@@ -78,10 +37,95 @@ namespace {
         }
     }
 
+    template <size_t N>
+    void ShowTalkLine(
+        DialogueBox& dialogue,
+        int talk,
+        const char* const (&lines)[N])
+    {
+        if (talk >= 0 &&
+            talk < static_cast<int>(N) &&
+            lines[talk] != nullptr) {
+            dialogue.Show(lines[talk]);
+        }
+    }
+
+	// 会話の配列から、指定した進行度のセリフを返す
+    template <size_t N>
+    const char* GetTalkFromArray(const char* const (&talks)[N], int talk)
+    {
+        if (talk < 0 || talk >= static_cast<int>(N)) {
+            return nullptr;
+        }
+        return talks[talk];
+    }
+
+    // 対応するセリフを表示する
+    void ShowSingleTalk(DialogueBox& dialogue, const char* text)
+    {
+        if (text != nullptr) {
+            dialogue.Show(text);
+        }
+    }
+
+	// 状況に合わせてセリフを分岐する（最初の敵と何回接触したか）
+    const char* GetReactToEnemyHitTalk(const Game& game, int talk)
+    {
+        if (game.GetPreviousAlphabet() == 'A' &&
+            game.GetCurrentAlphabet() == 'A') {
+            return GetTalkFromArray(
+                GameText::Tutorial::ReactToEnemyHit::StayA::kTalks,
+                talk);
+        }
+
+        if (game.GetPreviousAlphabet() == 'B' &&
+            game.GetCurrentAlphabet() == 'A') {
+            return GetTalkFromArray(
+                GameText::Tutorial::ReactToEnemyHit::BtoA::kTalks,
+                talk);
+        }
+
+        if (game.GetPreviousAlphabet() == 'C' &&
+            game.GetCurrentAlphabet() == 'B') {
+            return GetTalkFromArray(
+                GameText::Tutorial::ReactToEnemyHit::CtoB::kTalks,
+                talk);
+        }
+
+        return nullptr;
+    }
+
+	// 状況に合わせてセリフを分岐する（リング手前までに何回接触したか）
+    const char* GetReflectOnEnemyTrapTalk(const Game& game, int talk)
+    {
+        if (game.GetPreviousAlphabet() == 'A' &&
+            game.GetCurrentAlphabet() == 'A') {
+            return GetTalkFromArray(
+                GameText::Tutorial::ReflectOnEnemyTrap::StayA::kTalks,
+                talk);
+        }
+
+        if (game.GetPreviousAlphabet() == 'B' &&
+            game.GetCurrentAlphabet() == 'A') {
+            return GetTalkFromArray(
+                GameText::Tutorial::ReflectOnEnemyTrap::BtoA::kTalks,
+                talk);
+        }
+
+        if (game.GetPreviousAlphabet() == 'C' &&
+            game.GetCurrentAlphabet() == 'B') {
+            return GetTalkFromArray(
+                GameText::Tutorial::ReflectOnEnemyTrap::CtoB::kTalks,
+                talk);
+        }
+
+        return nullptr;
+    }
 }  // namespace
 
 // ===== DialogueBox =====
 
+// ダイアログボックスの初期化
 void DialogueBox::Init()
 {
     font_handle_ = CreateFontToHandle(
@@ -90,28 +134,33 @@ void DialogueBox::Init()
         FontConst::kDialogueThickness);
 }
 
+// ダイアログボックスにテキストを表示する
 void DialogueBox::Show(const char* text)
 {
     current_ = text;
 }
 
+// ダイアログボックスを閉じる
 void DialogueBox::Hide()
 {
     current_ = nullptr;
 }
 
+// ダイアログボックスが表示中か
 bool DialogueBox::IsShowing() const
 {
     return current_ != nullptr;
 }
 
+// ダイアログボックスの描画
 void DialogueBox::Draw()
 {
     if (!current_) {
         return;
     }
 
-    const int box_height = Map::TILE * TutorialConst::kDialogueBoxTileHeight;
+    const int box_height =
+        MapConst::kMapTile * TutorialConst::kDialogueBoxTileHeight;
 
     const int box_x1 = 0;
     const int box_y1 = GameConst::kScreenHeight - box_height;
@@ -154,6 +203,7 @@ void DialogueBox::Draw()
     }
 }
 
+// テキストを改行コードで複数行に分割する
 std::vector<std::string> DialogueBox::SplitLines(const char* text)
 {
     std::vector<std::string> result;
@@ -176,8 +226,9 @@ std::vector<std::string> DialogueBox::SplitLines(const char* text)
     return result;
 }
 
-// ===== TutorialManager 基本 =====
+// ===== チュートリアル関連  =====
 
+// チュートリアルの初期化
 void TutorialManager::Init(Game& game)
 {
     phase_ = TutorialPhase::WAKE_UP;
@@ -192,26 +243,30 @@ void TutorialManager::Init(Game& game)
     is_waiting_ = false;
 
     dialogue_.Init();
-    dialogue_.Show("………");
+    dialogue_.Show(GameText::Tutorial::WakeUp::kTalks[0]);
 
     game.SetupTutorialStage();
 }
 
+// チュートリアルをスキップする
 void TutorialManager::SkipReset()
 {
     phase_ = TutorialPhase::TUTORIAL_SKIP;
 }
 
+//チュートリアルを終了したか
 bool TutorialManager::IsFinished() const
 {
     return phase_ == TutorialPhase::TUTORIAL_END;
 }
 
+// セリフを表示中かどうか
 bool TutorialManager::IsDialogueShowing() const
 {
     return dialogue_.IsShowing();
 }
 
+// プレイヤー入力を止めるべきフェーズか
 bool TutorialManager::IsInputLocked() const
 {
     return phase_ == TutorialPhase::WAKE_UP ||
@@ -234,18 +289,8 @@ bool TutorialManager::IsInputLocked() const
         phase_ == TutorialPhase::WAKE_AFTER_RESET;
 }
 
-void TutorialManager::Draw()
-{
-    dialogue_.Draw();
 
-    if (fade_alpha_ > 0) {
-        SetDrawBlendMode(DX_BLENDMODE_ALPHA, fade_alpha_);
-        DrawBox(0, 0, GameConst::kScreenWidth, GameConst::kScreenHeight, GetColor(0, 0, 0), TRUE);
-        SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
-    }
-}
-
-// ===== TutorialManager 補助 =====
+// ===== フェーズ更新の判定用 =====
 
 bool TutorialManager::IsPlayerOn(Game& game, int tile_x, int tile_y)
 {
@@ -257,7 +302,7 @@ bool TutorialManager::IsChaserOn(Game& game, int tile_x, int tile_y)
     return game.IsAnyChaserOnTile(tile_x, tile_y);
 }
 
-// ===== TutorialManager 更新 =====
+// ===== チュートリアル 更新 =====
 
 void TutorialManager::Update(Game& game)
 {
@@ -265,21 +310,7 @@ void TutorialManager::Update(Game& game)
 
     case TutorialPhase::WAKE_UP:
         AdvanceTalkOnEnter(game, talk_);
-
-        ShowTalkLine(dialogue_, talk_, {
-            "………",
-            "うっ……ここは？",
-            "俺は、確か……",
-            "…っ！？",
-            "かっ、身体が…",
-            "アルファベットの『A』になってるっ！？",
-            "………",
-            "もしかして、俺は夢でも見ているのか？",
-            "………",
-            "はぁ…悩んでいても、しょうがないか…",
-            "なぜだか、動くことはできそうだし",
-            "とりあえず、先へ進んでよう！"
-            });
+        ShowTalkLine(dialogue_, talk_, GameText::Tutorial::WakeUp::kTalks);
 
         if (talk_ == 12) {
             ChangePhase(
@@ -291,7 +322,10 @@ void TutorialManager::Update(Game& game)
         break;
 
     case TutorialPhase::MOVE_TO_FIRST_TRIGGER:
-        if (IsPlayerOn(game, TutorialConst::kFirstTriggerX, TutorialConst::kFirstTriggerY)) {
+        if (IsPlayerOn(
+            game,
+            TutorialConst::kFirstTriggerX,
+            TutorialConst::kFirstTriggerY)) {
             phase_ = TutorialPhase::NOTICE_RING;
             talk_ = 1;
         }
@@ -299,12 +333,7 @@ void TutorialManager::Update(Game& game)
 
     case TutorialPhase::NOTICE_RING:
         AdvanceTalkOnEnter(game, talk_);
-
-        switch (talk_) {
-        case 1: dialogue_.Show("んっ……！？"); break;
-        case 2: dialogue_.Show("あれは何だ？"); break;
-        case 3: dialogue_.Show("光の…リング？"); break;
-        }
+        ShowTalkLine(dialogue_, talk_, GameText::Tutorial::NoticeRing::kTalks);
 
         if (talk_ == 4) {
             ChangePhase(
@@ -316,7 +345,10 @@ void TutorialManager::Update(Game& game)
         break;
 
     case TutorialPhase::MOVE_NEAR_FIRST_RING:
-        if (IsPlayerOn(game, TutorialConst::kFirstRingNearX, TutorialConst::kFirstRingNearY)) {
+        if (IsPlayerOn(
+            game,
+            TutorialConst::kFirstRingNearX,
+            TutorialConst::kFirstRingNearY)) {
             phase_ = TutorialPhase::CONSIDER_FIRST_RING;
             talk_ = 1;
         }
@@ -324,12 +356,10 @@ void TutorialManager::Update(Game& game)
 
     case TutorialPhase::CONSIDER_FIRST_RING:
         AdvanceTalkOnEnter(game, talk_);
-
-        switch (talk_) {
-        case 1: dialogue_.Show("なにか不思議な力を感じるぞ…"); break;
-        case 2: dialogue_.Show("ここを通らないと、先には進めそうにないし"); break;
-        case 3: dialogue_.Show("この『光のリング』を踏んでみるか…"); break;
-        }
+        ShowTalkLine(
+            dialogue_,
+            talk_,
+            GameText::Tutorial::ConsiderFirstRing::kTalks);
 
         if (talk_ == 4) {
             ChangePhase(
@@ -341,23 +371,21 @@ void TutorialManager::Update(Game& game)
         break;
 
     case TutorialPhase::STEP_INTO_FIRST_RING:
-        if (IsPlayerOn(game, TutorialConst::kFirstRingX, TutorialConst::kFirstRingY)) {
+        if (IsPlayerOn(
+            game,
+            TutorialConst::kFirstRingX,
+            TutorialConst::kFirstRingY)) {
+			game.EnterFirstRingScene();
             phase_ = TutorialPhase::REACT_TO_FIRST_RING;
         }
         break;
 
     case TutorialPhase::REACT_TO_FIRST_RING:
         AdvanceTalkOnEnter(game, talk_);
-
-        switch (talk_) {
-        case 1: dialogue_.Show("身体が『A』から『B』に変わった！？"); break;
-        case 2: dialogue_.Show("ってことは…"); break;
-        case 3: dialogue_.Show("『Z』で入ったら、どうなるんだ？"); break;
-        case 4: dialogue_.Show("あのリングは、向こう側へ移動したみたいだけど…"); break;
-        case 5: dialogue_.Show("………"); break;
-        case 6: dialogue_.Show("もしかして、あの「青い四角」に入ったら"); break;
-        case 7: dialogue_.Show("向こう側へ行けたりして…"); break;
-        }
+        ShowTalkLine(
+            dialogue_,
+            talk_,
+            GameText::Tutorial::ReactToFirstRing::kTalks);
 
         if (talk_ == 8) {
             ChangePhase(
@@ -376,13 +404,7 @@ void TutorialManager::Update(Game& game)
 
     case TutorialPhase::REACT_TO_PORTAL:
         AdvanceTalkOnEnter(game, talk_);
-
-        switch (talk_) {
-        case 1: dialogue_.Show("あっ、本当に移動できた！"); break;
-        case 2: dialogue_.Show("この「青い四角」はワープポータルだったのか…"); break;
-        case 3: dialogue_.Show("他にできることもないし"); break;
-        case 4: dialogue_.Show("ひとまず『Z』を目指して進んでみるか"); break;
-        }
+        ShowTalkLine(dialogue_, talk_, GameText::Tutorial::ReactToPortal::kTalks);
 
         if (talk_ == 5) {
             ChangePhase(
@@ -394,7 +416,10 @@ void TutorialManager::Update(Game& game)
         break;
 
     case TutorialPhase::MOVE_TO_WORLD_SHIFT_RING:
-        if (IsPlayerOn(game, TutorialConst::kWorldShiftRingX, TutorialConst::kWorldShiftRingY)) {
+        if (IsPlayerOn(
+            game,
+            TutorialConst::kWorldShiftRingX,
+            TutorialConst::kWorldShiftRingY)) {
             game.StartTutorialWorldShiftScene();
             phase_ = TutorialPhase::REACT_TO_WORLD_SHIFT;
         }
@@ -402,16 +427,10 @@ void TutorialManager::Update(Game& game)
 
     case TutorialPhase::REACT_TO_WORLD_SHIFT:
         AdvanceTalkOnEnter(game, talk_);
-
-        switch (talk_) {
-        case 1: dialogue_.Show("はっ……！？"); break;
-        case 2: dialogue_.Show("どうなっているんだ…？"); break;
-        case 3: dialogue_.Show("今度は「身体」だけじゃなくて"); break;
-        case 4: dialogue_.Show("「世界」も変わった！？"); break;
-        case 5: dialogue_.Show("本当にどうなっているんだよ…全く"); break;
-        case 6: dialogue_.Show("…………"); break;
-        case 7: dialogue_.Show("ん………あれは？"); break;
-        }
+        ShowTalkLine(
+            dialogue_,
+            talk_,
+            GameText::Tutorial::ReactToWorldShift::kTalks);
 
         if (talk_ == 8) {
             ChangePhase(
@@ -423,19 +442,17 @@ void TutorialManager::Update(Game& game)
         break;
 
     case TutorialPhase::MOVE_NEAR_SUSPICIOUS_ENEMY:
-        if (IsPlayerOn(game, TutorialConst::kSuspiciousEnemyNearX, TutorialConst::kSuspiciousEnemyNearY)) {
+        if (IsPlayerOn(
+            game,
+            TutorialConst::kSuspiciousEnemyNearX,
+            TutorialConst::kSuspiciousEnemyNearY)) {
             phase_ = TutorialPhase::WARN_ABOUT_ENEMY;
         }
         break;
 
     case TutorialPhase::WARN_ABOUT_ENEMY:
         AdvanceTalkOnEnter(game, talk_);
-
-        switch (talk_) {
-        case 1: dialogue_.Show("見るからに怪しい雰囲気を感じるな…"); break;
-        case 2: dialogue_.Show("コレは通って大丈夫なのか…？"); break;
-        case 3: dialogue_.Show("なんだか嫌な予感がするぞ"); break;
-        }
+        ShowTalkLine(dialogue_, talk_, GameText::Tutorial::WarnAboutEnemy::kTalks);
 
         if (talk_ == 4) {
             ChangePhase(
@@ -447,41 +464,17 @@ void TutorialManager::Update(Game& game)
         break;
 
     case TutorialPhase::STEP_TOWARD_ENEMY:
-        if (IsPlayerOn(game, TutorialConst::kStepTowardEnemyX, TutorialConst::kStepTowardEnemyY)) {
+        if (IsPlayerOn(
+            game,
+            TutorialConst::kStepTowardEnemyX,
+            TutorialConst::kStepTowardEnemyY)) {
             phase_ = TutorialPhase::REACT_TO_ENEMY_HIT;
         }
         break;
 
     case TutorialPhase::REACT_TO_ENEMY_HIT:
         AdvanceTalkOnEnter(game, talk_);
-
-        if (game.GetPreviousAlphabet() == 'A' && game.GetCurrentAlphabet() == 'A') {
-            switch (talk_) {
-            case 1: dialogue_.Show("戻っちまった…"); break;
-            case 2: dialogue_.Show("しかも、何も考えずに何度も踏んだから"); break;
-            case 3: dialogue_.Show("最初からやり直しか…"); break;
-            case 4: dialogue_.Show("ただ『A』で踏んでも何も起きなかったし"); break;
-            case 5: dialogue_.Show("それが分かっただけでも良しとしよう"); break;
-            }
-        }
-        else if (game.GetPreviousAlphabet() == 'B' && game.GetCurrentAlphabet() == 'A') {
-            switch (talk_) {
-            case 1: dialogue_.Show("くそ………やっぱり、こうなったか"); break;
-            case 2: dialogue_.Show("しかも２回踏んだから『A』に戻ってしまった"); break;
-            case 3: dialogue_.Show("もし、もう１度踏んでしまったら…"); break;
-            case 4: dialogue_.Show("………"); break;
-            case 5: dialogue_.Show("ちょっと怖いし、これからは気を付けないと…"); break;
-            }
-        }
-        else if (game.GetPreviousAlphabet() == 'C' && game.GetCurrentAlphabet() == 'B') {
-            switch (talk_) {
-            case 1: dialogue_.Show("………やっぱり"); break;
-            case 2: dialogue_.Show("この赤いマークを踏むと"); break;
-            case 3: dialogue_.Show("アルファベットが戻ってしまうのか…"); break;
-            case 4: dialogue_.Show("しかも、あそこのマークは動くみたいだし"); break;
-            case 5: dialogue_.Show("これからは気を付けて進まないとな…"); break;
-            }
-        }
+        ShowSingleTalk(dialogue_, GetReactToEnemyHitTalk(game, talk_));
 
         if (talk_ == 6) {
             ChangePhase(
@@ -493,41 +486,17 @@ void TutorialManager::Update(Game& game)
         break;
 
     case TutorialPhase::MOVE_TO_SAFE_RING:
-        if (IsPlayerOn(game, TutorialConst::kSafeRingX, TutorialConst::kSafeRingY)) {
+        if (IsPlayerOn(
+            game,
+            TutorialConst::kSafeRingX,
+            TutorialConst::kSafeRingY)) {
             phase_ = TutorialPhase::REFLECT_ON_ENEMY_TRAP;
         }
         break;
 
     case TutorialPhase::REFLECT_ON_ENEMY_TRAP:
         AdvanceTalkOnEnter(game, talk_);
-
-        if (game.GetPreviousAlphabet() == 'A' && game.GetCurrentAlphabet() == 'A') {
-            switch (talk_) {
-            case 1: dialogue_.Show("結局、何度も踏んでしまった…"); break;
-            case 2: dialogue_.Show("………まあ、いっか……"); break;
-            case 3: dialogue_.Show("深く考えてもしょうがないし"); break;
-            case 4: dialogue_.Show("『Z』になるまで長くなりそうだしな"); break;
-            case 5: dialogue_.Show("とりあえず、進んどけば何とかなるでしょ！"); break;
-            }
-        }
-        else if (game.GetPreviousAlphabet() == 'B' && game.GetCurrentAlphabet() == 'A') {
-            switch (talk_) {
-            case 1: dialogue_.Show("結局『A』に戻ってしまった…か"); break;
-            case 2: dialogue_.Show("…まぁ、深く考えてもしょうがないし"); break;
-            case 3: dialogue_.Show("ここから仕切り直すか…"); break;
-            case 4: dialogue_.Show("ただこれ以上何かあっても嫌だし"); break;
-            case 5: dialogue_.Show("油断せずに進まないと…"); break;
-            }
-        }
-        else if (game.GetPreviousAlphabet() == 'C' && game.GetCurrentAlphabet() == 'B') {
-            switch (talk_) {
-            case 1: dialogue_.Show("ふぅ……"); break;
-            case 2: dialogue_.Show("なんとか踏まずにここまで来れた！"); break;
-            case 3: dialogue_.Show("とはいえ『Z』までは先が長そうだし"); break;
-            case 4: dialogue_.Show("まだまだ何が起こるか分からない"); break;
-            case 5: dialogue_.Show("これからも油断せずに進まないと…"); break;
-            }
-        }
+        ShowSingleTalk(dialogue_, GetReflectOnEnemyTrapTalk(game, talk_));
 
         if (talk_ == 6) {
             ChangePhase(
@@ -539,7 +508,10 @@ void TutorialManager::Update(Game& game)
         break;
 
     case TutorialPhase::STEP_INTO_ESCAPE_RING:
-        if (IsPlayerOn(game, TutorialConst::kEscapeRingX, TutorialConst::kEscapeRingY)) {
+        if (IsPlayerOn(
+            game,
+            TutorialConst::kEscapeRingX,
+            TutorialConst::kEscapeRingY)) {
             game.StartTutorialChaserScene();
             phase_ = TutorialPhase::NOTICE_RING_CHASER;
         }
@@ -547,11 +519,10 @@ void TutorialManager::Update(Game& game)
 
     case TutorialPhase::NOTICE_RING_CHASER:
         AdvanceTalkOnEnter(game, talk_);
-
-        switch (talk_) {
-        case 1: dialogue_.Show("ん…？"); break;
-        case 2: dialogue_.Show("今度は、一体どんなヤツだ？"); break;
-        }
+        ShowTalkLine(
+            dialogue_,
+            talk_,
+            GameText::Tutorial::NoticeRingChaser::kTalks);
 
         if (talk_ == 3) {
             ChangePhase(
@@ -563,18 +534,20 @@ void TutorialManager::Update(Game& game)
         break;
 
     case TutorialPhase::WAIT_FOR_RING_CHASER_APPROACH:
-        if (IsChaserOn(game, TutorialConst::kChaserApproachX, TutorialConst::kChaserApproachY)) {
+        if (IsChaserOn(
+            game,
+            TutorialConst::kChaserApproachX,
+            TutorialConst::kChaserApproachY)) {
             phase_ = TutorialPhase::UNDERSTAND_RING_CHASER;
         }
         break;
 
     case TutorialPhase::UNDERSTAND_RING_CHASER:
         AdvanceTalkOnEnter(game, talk_);
-
-        switch (talk_) {
-        case 1: dialogue_.Show("あいつ、まさか…"); break;
-        case 2: dialogue_.Show("リングを追いかけて移動しているのか？"); break;
-        }
+        ShowTalkLine(
+            dialogue_,
+            talk_,
+            GameText::Tutorial::UnderstandRingChaser::kTalks);
 
         if (talk_ == 3) {
             ChangePhase(
@@ -586,7 +559,10 @@ void TutorialManager::Update(Game& game)
         break;
 
     case TutorialPhase::WAIT_FOR_RING_CHASER_REACH_RING:
-        if (IsChaserOn(game, TutorialConst::kChaserReachRingX, TutorialConst::kChaserReachRingY)) {
+        if (IsChaserOn(
+            game,
+            TutorialConst::kChaserReachRingX,
+            TutorialConst::kChaserReachRingY)) {
             phase_ = TutorialPhase::CONFIRM_RING_CHASER_BEHAVIOR;
             game.AdvanceTutorialAfterChaserReachedRing();
         }
@@ -594,10 +570,10 @@ void TutorialManager::Update(Game& game)
 
     case TutorialPhase::CONFIRM_RING_CHASER_BEHAVIOR:
         AdvanceTalkOnEnter(game, talk_);
-
-        if (talk_ == 1) {
-            dialogue_.Show("やっぱり、そうだったのか…");
-        }
+        ShowTalkLine(
+            dialogue_,
+            talk_,
+            GameText::Tutorial::ConfirmRingChaserBehavior::kTalks);
 
         if (talk_ == 2) {
             ChangePhase(
@@ -609,7 +585,10 @@ void TutorialManager::Update(Game& game)
         break;
 
     case TutorialPhase::WAIT_FOR_NEXT_RING_MOVE:
-        if (IsChaserOn(game, 15, 5)) {
+        if (IsChaserOn(game,
+            TutorialConst::kAfterChaserReachRingNextX,
+            TutorialConst::kAfterChaserReachRingNextY))
+        {
             phase_ = TutorialPhase::FEEL_CORNERED;
             game.SetupTutorialCorneredScene();
         }
@@ -617,13 +596,7 @@ void TutorialManager::Update(Game& game)
 
     case TutorialPhase::FEEL_CORNERED:
         AdvanceTalkOnEnter(game, talk_);
-
-        switch (talk_) {
-        case 1: dialogue_.Show("くそ、このままじゃ…"); break;
-        case 2: dialogue_.Show("いつまで経っても先に進めない…"); break;
-        case 3: dialogue_.Show("一体…どうすれば…"); break;
-        case 4: dialogue_.Show("ん…？　あれは、何だ？"); break;
-        }
+        ShowTalkLine(dialogue_, talk_, GameText::Tutorial::FeelCornered::kTalks);
 
         if (talk_ == 5) {
             ChangePhase(
@@ -635,18 +608,24 @@ void TutorialManager::Update(Game& game)
         break;
 
     case TutorialPhase::MOVE_TO_MYSTERIOUS_ITEM:
-        if (IsPlayerOn(game, TutorialConst::kItemPointAX, TutorialConst::kItemPointAY) ||
-            IsPlayerOn(game, TutorialConst::kItemPointBX, TutorialConst::kItemPointBY)) {
+        if (IsPlayerOn(
+            game,
+            TutorialConst::kItemPointAX,
+            TutorialConst::kItemPointAY) ||
+            IsPlayerOn(
+                game,
+                TutorialConst::kItemPointBX,
+                TutorialConst::kItemPointBY)) {
             phase_ = TutorialPhase::REACT_TO_MYSTERIOUS_ITEM;
         }
         break;
 
     case TutorialPhase::REACT_TO_MYSTERIOUS_ITEM:
         AdvanceTalkOnEnter(game, talk_);
-
-        if (talk_ == 1) {
-            dialogue_.Show("触れても、特に何も起きなかったけど…");
-        }
+        ShowTalkLine(
+            dialogue_,
+            talk_,
+            GameText::Tutorial::ReactToMysteriousItem::kTalks);
 
         if (talk_ == 2) {
             phase_ = TutorialPhase::WAIT_FOR_SPEED_EFFECT;
@@ -662,19 +641,17 @@ void TutorialManager::Update(Game& game)
             game.GetSignalManager().Clear(TutorialSignal::kPlayerMoved);
         }
 
-        if (move_signal_count_ > kSpeedEffectStepThreshold) {
+        if (move_signal_count_ > TutorialConst::kSpeedEffectStepThreshold) {
             phase_ = TutorialPhase::UNDERSTAND_SPEED_BOOST;
         }
         break;
 
     case TutorialPhase::UNDERSTAND_SPEED_BOOST:
         AdvanceTalkOnEnter(game, talk_);
-
-        switch (talk_) {
-        case 1: dialogue_.Show("なるほど…"); break;
-        case 2: dialogue_.Show("アイツよりも少しだけ速く動けるようになったみたいだ"); break;
-        case 3: dialogue_.Show("これなら何とかなるかもしれないぞ"); break;
-        }
+        ShowTalkLine(
+            dialogue_,
+            talk_,
+            GameText::Tutorial::UnderstandSpeedBoost::kTalks);
 
         if (talk_ == 4) {
             ChangePhase(
@@ -693,20 +670,14 @@ void TutorialManager::Update(Game& game)
 
     case TutorialPhase::COLLAPSE_WARNING:
         AdvanceTalkOnEnter(game, talk_);
-
-        switch (talk_) {
-        case 1: dialogue_.Show("よし、この調子でどんどん進んでいこう！"); break;
-        case 2: dialogue_.Show("（グラッ…）"); break;
-        case 3: dialogue_.Show("うっ…急に意識が…"); break;
-        case 4: dialogue_.Show("くそっ、これからってときに…"); break;
-        case 5: dialogue_.Show("時間をかけすぎちまったって…ことなの…かっ…"); break;
-        case 6: dialogue_.Show("……………"); break;
-        }
+        ShowTalkLine(
+            dialogue_,
+            talk_,
+            GameText::Tutorial::CollapseWarning::kTalks);
 
         if (talk_ == 7) {
             is_fading_out_ = true;
             fade_alpha_ = 0;
-
             phase_ = TutorialPhase::FADE_OUT_AND_RESET;
             talk_ = 1;
             dialogue_.Hide();
@@ -748,15 +719,10 @@ void TutorialManager::Update(Game& game)
 
     case TutorialPhase::WAKE_AFTER_RESET:
         AdvanceTalkOnEnter(game, talk_);
-
-        switch (talk_) {
-        case 1: dialogue_.Show("……………"); break;
-        case 2: dialogue_.Show("うっ……ここは…"); break;
-        case 3: dialogue_.Show("……………"); break;
-        case 4: dialogue_.Show("やっぱり…『A』に戻ってしまったか"); break;
-        case 5: dialogue_.Show("………まあ、仕方ねぇな"); break;
-        case 6: dialogue_.Show("気を取り直して、また『Z』を目指そう！"); break;
-        }
+        ShowTalkLine(
+            dialogue_,
+            talk_,
+            GameText::Tutorial::WakeAfterReset::kTalks);
 
         if (talk_ == 7) {
             ChangePhase(
@@ -772,5 +738,23 @@ void TutorialManager::Update(Game& game)
 
     case TutorialPhase::TUTORIAL_SKIP:
         break;
+    }
+}
+
+// ===== チュートリアル 描画 =====
+void TutorialManager::Draw()
+{
+    dialogue_.Draw();
+
+    if (fade_alpha_ > 0) {
+        SetDrawBlendMode(DX_BLENDMODE_ALPHA, fade_alpha_);
+        DrawBox(
+            0,
+            0,
+            GameConst::kScreenWidth,
+            GameConst::kScreenHeight,
+            GetColor(0, 0, 0),
+            TRUE);
+        SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
     }
 }

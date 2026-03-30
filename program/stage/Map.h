@@ -1,8 +1,11 @@
 ﻿#pragma once
+#include <array>
+#include "GameConstants.h"
 
 class Map
 {
 public:
+
     // ===== 生成 =====
 
     Map();
@@ -10,18 +13,9 @@ public:
     // ===== 定数 =====
 
     // タイルサイズとマップ全体のサイズ
-    static constexpr int TILE = 32;
-    static constexpr int W = 20;
-    static constexpr int H = 15;
-
-    // 地形ID
-    static constexpr int kWall = 0;
-    static constexpr int kRoad = 1;
-
-    // ===== サイズ取得 =====
-
-    int GetWidth() const { return W; }
-    int GetHeight() const { return H; }
+    static constexpr int TILE = MapConst::kMapTile;
+    static constexpr int W = MapConst::kMapWidth;
+    static constexpr int H = MapConst::kMapHeight;
 
     // ===== 描画 =====
 
@@ -46,7 +40,7 @@ public:
     // ===== マップデータ設定 =====
 
     // 外部のマップデータを現在のマップへコピーする
-    void SetData(const int src[H][W]);
+    void SetMapData(const int src[H][W]);
 
     // ===== マップ切り替え =====
 
@@ -54,10 +48,7 @@ public:
     void UseTutorialMapA();
     void UseTutorialMapB();
     void UseTutorialMapC();
-
-    // 通常プレイ用マップへ切り替える
-    void UseMapA();
-    void UseMapB();
+    void UseAllRoadMap();
 
     // ===== 裏世界状態 =====
 
@@ -66,9 +57,6 @@ public:
 
     // 現在が裏世界状態かどうかを返す
     bool IsAltWorld() const { return is_alt_world_; }
-
-    // リングがマップ切り替え可能なマス上にあるかを判定する
-    bool CanSwitchRingPos(int tile_x, int tile_y) const;
 
 private:
     // 現在のマップデータ

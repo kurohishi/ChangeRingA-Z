@@ -1,7 +1,7 @@
 ﻿#include "Player.h"
 
 #include "DxLib.h"
-#include "Constants.h"
+#include "GameConstants.h"
 
 Player::Player(const Map& map)
 {
@@ -48,8 +48,8 @@ void Player::SetTileCenterPos(int tile_x, int tile_y)
 {
     // Player は左上基準で保持するので、
     // 指定タイルの中心に来るよう左上座標へ変換して保持する
-    x_ = tile_x * Map::TILE;
-    y_ = tile_y * Map::TILE;
+    x_ = tile_x * MapConst::kMapTile;
+    y_ = tile_y * MapConst::kMapTile;
 
     ring_x_ = GetTileCenterX();
     ring_y_ = GetTileCenterY();
@@ -74,16 +74,16 @@ bool Player::Update(const Map& map)
     int delta_y = 0;
 
     if (CheckHitKey(KEY_INPUT_LEFT) || CheckHitKey(KEY_INPUT_A)) {
-        delta_x = -Map::TILE;
+        delta_x = -MapConst::kMapTile;
     }
     else if (CheckHitKey(KEY_INPUT_RIGHT) || CheckHitKey(KEY_INPUT_D)) {
-        delta_x = Map::TILE;
+        delta_x = MapConst::kMapTile;
     }
     else if (CheckHitKey(KEY_INPUT_UP) || CheckHitKey(KEY_INPUT_W)) {
-        delta_y = -Map::TILE;
+        delta_y = -MapConst::kMapTile;
     }
     else if (CheckHitKey(KEY_INPUT_DOWN) || CheckHitKey(KEY_INPUT_S)) {
-        delta_y = Map::TILE;
+        delta_y = MapConst::kMapTile;
     }
 
     // 入力がなければ何もしない
@@ -96,11 +96,11 @@ bool Player::Update(const Map& map)
     const int next_center_y = GetTileCenterY() + delta_y;
 
     // 当たり判定用に、移動後の矩形左上座標を求める
-    const int next_left = next_center_x - width_ / 2;
-    const int next_top = next_center_y - height_ / 2;
+    const int next_left = next_center_x - PlayerConst::kWidth / 2;
+    const int next_top = next_center_y - PlayerConst::kHeight / 2;
 
-    // 移動先が通行可能かを判定する
-    if (!map.IsWalkableRect(next_left, next_top, width_, height_)) {
+    // 移動先が通行可能か
+    if (!map.IsWalkableRect(next_left, next_top, PlayerConst::kWidth, PlayerConst::kHeight)) {
         ring_x_ = 0;
         ring_y_ = 0;
         return false;
@@ -137,7 +137,7 @@ void Player::Draw()
         GetColor(255, 255, 255));
 }
 
-// 描画位置が前回から変わったかを判定する
+// 描画位置が前回から変わったか
 bool Player::HasDrawPositionChanged() const
 {
     return draw_center_x_ != prev_draw_center_x_ ||

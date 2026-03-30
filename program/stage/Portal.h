@@ -17,20 +17,15 @@ public:
 
     // ===== 更新・描画 =====
 
-    // アニメーション用の内部状態を更新する
     void Update();
-
-    // ポータルを描画する
     void Draw() const;
 
     // ===== 判定 =====
 
-    // プレイヤーがポータルに入ったかを判定する
     bool CheckHit(const Player& player) const;
 
     // ===== 座標設定 =====
 
-    // 配置位置をタイル座標で設定する
     void SetTilePos(int tile_x, int tile_y) override;
 
     // ===== 情報取得 =====
@@ -48,7 +43,7 @@ private:
     // ===== 演出用パラメータ =====
 
     // 描画アニメーションの進行値
-    float anim_ = 0.0f;
+    float anim_frame_ = 0.0f;
 
     // 拡縮率に応じて波打つポータル枠を描画する
     void DrawPortalBoxWave(float scale) const;

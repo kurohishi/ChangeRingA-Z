@@ -1,6 +1,6 @@
 ﻿#pragma once
 
-#include "Constants.h"
+#include "GameConstants.h"
 #include "GridObject.h"
 #include "Map.h"
 
@@ -17,11 +17,7 @@ public:
 
     // ===== 更新・描画 =====
 
-    // 入力に応じて移動処理を行う
-    // 位置が変化した場合は true を返す
     bool Update(const Map& map);
-
-    // プレイヤーを描画する
     void Draw();
 
     // ===== 描画位置管理 =====
@@ -56,37 +52,23 @@ public:
     // 現在いるタイルの中心座標を返す
     int GetTileCenterX() const
     {
-        return GetTilePosX() * Map::TILE + Map::TILE / 2;
+        return GetTilePosX() * MapConst::kMapTile + MapConst::kMapTile / 2;
     }
 
     int GetTileCenterY() const
     {
-        return GetTilePosY() * Map::TILE + Map::TILE / 2;
+        return GetTilePosY() * MapConst::kMapTile + MapConst::kMapTile / 2;
     }
 
     // リング関連の補助座標を返す
     int GetRingX() const { return ring_x_; }
     int GetRingY() const { return ring_y_; }
 
-    // ===== サイズ取得 =====
-
-    int GetWidth() const { return width_; }
-    int GetHeight() const { return height_; }
-
 private:
-
-    // ===== サイズ =====
-
-    int width_ = PlayerConst::kWidth;
-    int height_ = PlayerConst::kHeight;
-
-    // ===== リング関連 =====
 
     // リングとの判定や移動補助に使う座標（ピクセル座標）
     int ring_x_ = 0;
     int ring_y_ = 0;
-
-    // ===== 描画関連 =====
 
     // 現在フレームの描画中心座標
     int draw_center_x_ = 0;
@@ -96,14 +78,13 @@ private:
     int prev_draw_center_x_ = 0;
     int prev_draw_center_y_ = 0;
 
-    // ===== 状態 =====
-
+	// プレイヤーの移動速度
     int speed_ = 0;
 
     // 表示中の文字
     char character_ = PlayerConst::kNoCharacter;
 
-    // 描画フォントサイズ
+    // プレイヤーの文字サイズ
     int font_size_ = 0;
 
     // 移動入力間隔などの制御用

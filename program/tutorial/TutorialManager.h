@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 
-#include "Constants.h"
+#include "GameConstants.h"
 
 class Game;
 

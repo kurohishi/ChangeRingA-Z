@@ -140,43 +140,27 @@ namespace GameConst
     constexpr int kTitleBlinkInterval = 30;
 
     // ===== ガイド画面 =====
-    constexpr int kGuideTitleYShadow = 110;
-    constexpr int kGuideTitleY = 100;
+    constexpr int kGuideTitleYShadow = 100;
+    constexpr int kGuideTitleY = 80;
 
-    constexpr int kGuideLine1Y = 190;
-    constexpr int kGuideLine2Y = 230;
-    constexpr int kGuideLine3Y = 270;
-    constexpr int kGuideLine4Y = 310;
+    constexpr int kGuideLine1Y = 170;
+    constexpr int kGuideLine2Y = 210;
+    constexpr int kGuideLine3Y = 250;
+    constexpr int kGuideLine4Y = 290;
+    constexpr int kGuideLine5Y = 330;
 
-    constexpr int kGuideTextX = 80;
+    constexpr int kGuideTextX = 60;
     constexpr int kGuideStartX = 150;
-    constexpr int kGuideStartY = 380;
+    constexpr int kGuideStartY = 390;
 
     // ===== カウントダウン画面 =====
     constexpr int kCountTextY = 180;
     constexpr int kCountShadowOffset = 6;
 
-    // ===== スキップポップアップ =====
-    constexpr int kSkipHintX = 530;
-    constexpr int kSkipHintY = 10;
+    // ===== プレイ画面 =====
+    constexpr int kSpawnMessageDurationFrames = 180;
 
-    constexpr int kSkipOverlayAlpha = 150;
-
-    constexpr int kSkipPopupX1 = 150;
-    constexpr int kSkipPopupY1 = 150;
-    constexpr int kSkipPopupX2 = 490;
-    constexpr int kSkipPopupY2 = 300;
-
-    constexpr int kSkipPopupTextX = 180;
-    constexpr int kSkipPopupTextY = 180;
-
-    constexpr int kSkipYesX = 240;
-    constexpr int kSkipYesY = 230;
-
-    constexpr int kSkipNoX = 360;
-    constexpr int kSkipNoY = 230;
-
-    // ===== Resume画面 =====
+    // ===== ゲーム再開画面 =====
     constexpr int kResumeBgColorStep = 1;
 
     constexpr int kResumeBoxX1 = 120;
@@ -232,7 +216,7 @@ namespace FontConst
     constexpr int kGuideSize = 28;
     constexpr int kGuideThickness = 3;
 
-    constexpr int kGuideBigSize = 36;
+    constexpr int kGuideBigSize = 30;
     constexpr int kGuideBigThickness = 6;
 
     constexpr int kCountSize = 80;
@@ -262,6 +246,26 @@ namespace TutorialConst
     constexpr int kDialogueBoxTileHeight = 3;
     constexpr int kDialogueBorderMargin = 10;
 
+    // ===== スキップポップアップ =====
+    constexpr int kSkipHintX = 530;
+    constexpr int kSkipHintY = 10;
+
+    constexpr int kSkipOverlayAlpha = 150;
+
+    constexpr int kSkipPopupX1 = 150;
+    constexpr int kSkipPopupY1 = 150;
+    constexpr int kSkipPopupX2 = 490;
+    constexpr int kSkipPopupY2 = 300;
+
+    constexpr int kSkipPopupTextX = 180;
+    constexpr int kSkipPopupTextY = 180;
+
+    constexpr int kSkipYesX = 240;
+    constexpr int kSkipYesY = 230;
+
+    constexpr int kSkipNoX = 360;
+    constexpr int kSkipNoY = 230;
+
     // ===== 演出 =====
     constexpr int kFadeSpeed = 8;
     constexpr int kFadeMaxAlpha = 255;
@@ -277,6 +281,9 @@ namespace TutorialConst
     constexpr int kRingNextX = 18;
     constexpr int kRingNextY = 7;
 
+    constexpr int kChaserStartX = 18;
+    constexpr int kChaserStartY = 7;
+
     constexpr int kPortalAX = 1;
     constexpr int kPortalAY = 1;
     constexpr int kPortalAPair = 1;
@@ -284,6 +291,19 @@ namespace TutorialConst
     constexpr int kPortalBX = 18;
     constexpr int kPortalBY = 1;
     constexpr int kPortalBPair = 0;
+
+    // ===== リング移動先 =====
+    constexpr int kWorldShiftNextRingX = 1;
+    constexpr int kWorldShiftNextRingY = 7;
+
+    constexpr int kAfterChaserNextRingX = 15;
+    constexpr int kAfterChaserNextRingY = 5;
+
+    constexpr int kCorneredNextRingX = 11;
+    constexpr int kCorneredNextRingY = 11;
+
+    constexpr int kEndNextRingX = 10;
+    constexpr int kEndNextRingY = 2;
 
     // ===== 進行座標 =====
     constexpr int kFirstTriggerX = 9;
@@ -327,6 +347,11 @@ namespace TutorialConst
 
     constexpr int kResetPlayerX = 10;
     constexpr int kResetPlayerY = 7;
+
+    constexpr int kAfterChaserReachRingNextX = 15;
+    constexpr int kAfterChaserReachRingNextY = 5;
+
+    constexpr int kSpeedEffectStepThreshold = 2;
 }
 
 // ==============================
@@ -357,8 +382,13 @@ namespace PlayerConst
 
 namespace MapConst
 {
+    constexpr int kMapTile = 32;
+
     constexpr int kWall = 0;
     constexpr int kFloor = 1;
+
+    constexpr int kMapWidth = 20;
+    constexpr int kMapHeight = 15;
 
     constexpr int kWallColorR = 80;
     constexpr int kWallColorG = 80;
@@ -399,6 +429,12 @@ namespace ItemConst
     constexpr int kMiddleRadius = 8;
     constexpr int kInnerRadius = 6;
     constexpr int kCoreRadius = 4;
+
+    constexpr int kOuterHalfLength = 11;
+    constexpr int kOuterInnerHalfLength = 10;
+    constexpr int kMiddleHalfLength = 8;
+    constexpr int kInnerHalfLength = 7;
+    constexpr int kCoreHalfLength = 6;
 
     constexpr int kFrameR = 200;
     constexpr int kFrameG = 180;

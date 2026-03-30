@@ -4,9 +4,7 @@
 
 #include "DxLib.h"
 #include "Map.h"
-#include "Constants.h"
-
-// ===== Item =====
+#include "GameConstants.h"
 
 // タイル座標と種類を指定してアイテムを生成する
 Item::Item(int tile_x, int tile_y, ItemType type)
@@ -45,8 +43,8 @@ bool Item::CheckHit(const Player& player) const
 void Item::Draw() const
 {
     // 描画用の中心座標
-    const int center_x = x_ + Map::TILE / 2;
-    const int center_y = y_ + Map::TILE / 2;
+    const int center_x = x_ + MapConst::kMapTile / 2;
+    const int center_y = y_ + MapConst::kMapTile / 2;
 
     // 色変化アニメーション用の波
     const double time = item_frame_ * ItemConst::kColorWaveSpeed;
@@ -94,48 +92,68 @@ void Item::Draw() const
             GetColor(ItemConst::kWhiteR, ItemConst::kWhiteG, ItemConst::kWhiteB),
             TRUE);
     }
-    else if (type_ == ItemType::BOOST_ALPHABET) {
+    else if (type_ == ItemType::BOOST_ALPHABET)
+    {
         const int red = static_cast<int>(ItemConst::kBaseColor * wave);
         const int green = static_cast<int>(ItemConst::kBaseColor * (1.0 - wave));
         const int blue = ItemConst::kBaseColor;
 
-        DrawCircle(
-            center_x,
-            center_y,
-            ItemConst::kOuterRadius,
-            GetColor(ItemConst::kFrameR, ItemConst::kFrameG, ItemConst::kFrameB),
-            TRUE);
+        // ===== ひし形サイズ =====
+        const int outer = ItemConst::kOuterHalfLength;
+        const int inner = ItemConst::kInnerHalfLength;
+        const int core = ItemConst::kCoreHalfLength;
 
-        DrawCircle(
-            center_x,
-            center_y,
-            ItemConst::kOuterInnerRadius,
-            GetColor(ItemConst::kBlackR, ItemConst::kBlackG, ItemConst::kBlackB),
-            TRUE);
+        // ===== 外枠（ひし形）=====
+        DrawTriangle(center_x, center_y - outer,
+            center_x + outer, center_y,
+            center_x, center_y + outer,
+            GetColor(ItemConst::kFrameR, ItemConst::kFrameG, ItemConst::kFrameB), TRUE);
 
-        DrawCircle(
-            center_x,
-            center_y,
-            ItemConst::kMiddleRadius,
+        DrawTriangle(center_x, center_y - outer,
+            center_x - outer, center_y,
+            center_x, center_y + outer,
+            GetColor(ItemConst::kFrameR, ItemConst::kFrameG, ItemConst::kFrameB), TRUE);
+
+        // ===== 内側（黒）=====
+        DrawTriangle(center_x, center_y - (outer - 4),
+            center_x + (outer - 4), center_y,
+            center_x, center_y + (outer - 4),
+            GetColor(ItemConst::kBlackR, ItemConst::kBlackG, ItemConst::kBlackB), TRUE);
+
+        DrawTriangle(center_x, center_y - (outer - 4),
+            center_x - (outer - 4), center_y,
+            center_x, center_y + (outer - 4),
+            GetColor(ItemConst::kBlackR, ItemConst::kBlackG, ItemConst::kBlackB), TRUE);
+
+        // ===== メインカラー（固定色）=====
+        DrawTriangle(center_x, center_y - inner,
+            center_x + inner, center_y,
+            center_x, center_y + inner,
             GetColor(
                 ItemConst::kBoostFixedR,
                 ItemConst::kBoostFixedG,
                 ItemConst::kBoostFixedB),
             TRUE);
 
-        DrawCircle(
-            center_x,
-            center_y,
-            ItemConst::kInnerRadius,
-            GetColor(ItemConst::kBlackR, ItemConst::kBlackG, ItemConst::kBlackB),
+        DrawTriangle(center_x, center_y - inner,
+            center_x - inner, center_y,
+            center_x, center_y + inner,
+            GetColor(
+                ItemConst::kBoostFixedR,
+                ItemConst::kBoostFixedG,
+                ItemConst::kBoostFixedB),
             TRUE);
 
-        DrawCircle(
-            center_x,
-            center_y,
-            ItemConst::kCoreRadius,
-            GetColor(red, green, blue),
-            TRUE);
+        // ===== コア（色変化）=====
+        DrawTriangle(center_x, center_y - core,
+            center_x + core, center_y,
+            center_x, center_y + core,
+            GetColor(red, green, blue), TRUE);
+
+        DrawTriangle(center_x, center_y - core,
+            center_x - core, center_y,
+            center_x, center_y + core,
+            GetColor(red, green, blue), TRUE);
     }
 }
 

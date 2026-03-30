@@ -2,6 +2,7 @@
 
 #include "IPosition.h"
 #include "Map.h"
+#include "GameConstants.h"
 
 // タイル座標とピクセル座標を持つ共通基底クラス
 class GridObject : public IPosition
@@ -28,12 +29,12 @@ public:
 
     int GetTilePosX() const override
     {
-        return x_ / Map::TILE;
+        return x_ / MapConst::kMapTile;
     }
 
     int GetTilePosY() const override
     {
-        return y_ / Map::TILE;
+        return y_ / MapConst::kMapTile;
     }
 
     // ===== 座標設定 =====
@@ -46,14 +47,14 @@ public:
 
     virtual void SetTilePos(int tile_x, int tile_y)
     {
-        x_ = tile_x * Map::TILE;
-        y_ = tile_y * Map::TILE;
+        x_ = tile_x * MapConst::kMapTile;
+        y_ = tile_y * MapConst::kMapTile;
     }
 
     virtual void SetTileCenterPos(int tile_x, int tile_y)
     {
-        x_ = tile_x * Map::TILE + Map::TILE / 2;
-        y_ = tile_y * Map::TILE + Map::TILE / 2;
+        x_ = tile_x * MapConst::kMapTile + MapConst::kMapTile / 2;
+        y_ = tile_y * MapConst::kMapTile + MapConst::kMapTile / 2;
     }
 
     // ===== 補助判定 =====

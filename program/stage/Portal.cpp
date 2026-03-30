@@ -4,9 +4,7 @@
 
 #include "DxLib.h"
 #include "Map.h"
-#include "Constants.h"
-
-// ===== Portal =====
+#include "GameConstants.h"
 
 // タイル座標と接続先ペア番号を指定して生成する
 Portal::Portal(int tile_x, int tile_y, int pair_index)
@@ -25,18 +23,18 @@ void Portal::SetTilePos(int tile_x, int tile_y)
 void Portal::Update()
 {
     // 0.0f ～ 1.0f の範囲でループする値
-    anim_ += PortalConst::kAnimSpeed;
+    anim_frame_ += PortalConst::kAnimSpeed;
 
-    if (anim_ >= PortalConst::kAnimLoopMax) {
-        anim_ = 0.0f;
+    if (anim_frame_ >= PortalConst::kAnimLoopMax) {
+        anim_frame_ = 0.0f;
     }
 }
 
 // ポータル枠を拡縮率に応じて描画する
 void Portal::DrawPortalBoxWave(float scale) const
 {
-    const int size = static_cast<int>(Map::TILE * scale);
-    const int offset = (Map::TILE - size) / 2;
+    const int size = static_cast<int>(MapConst::kMapTile * scale);
+    const int offset = (MapConst::kMapTile - size) / 2;
 
     DrawBox(
         x_ + offset,
@@ -54,8 +52,8 @@ void Portal::DrawPortalBoxWave(float scale) const
 void Portal::Draw() const
 {
     // 位相をずらした2つの四角形を重ねて波打つように見せる
-    const float wave_1 = anim_;
-    float wave_2 = anim_ + PortalConst::kSecondWaveOffset;
+    const float wave_1 = anim_frame_;
+    float wave_2 = anim_frame_ + PortalConst::kSecondWaveOffset;
 
     if (wave_2 >= PortalConst::kAnimLoopMax) {
         wave_2 -= PortalConst::kAnimLoopMax;
@@ -68,7 +66,7 @@ void Portal::Draw() const
     DrawPortalBoxWave(scale_2);
 }
 
-// プレイヤーと同じタイルにいるかを判定する
+// プレイヤーと同じタイルにいるか
 bool Portal::CheckHit(const Player& player) const
 {
     return IsOnTile(player.GetTilePosX(), player.GetTilePosY());
